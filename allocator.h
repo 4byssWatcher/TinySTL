@@ -25,19 +25,19 @@ namespace TinySTL
 		};
 		pointer allocate()
 		{
-			return static_cast<pointer>(alloc::allocate(sizeof(T)));
+			return static_cast<pointer>(default_alloc_template::allocate(sizeof(T)));
 		}
 		pointer allocate(size_type n)
 		{
-			return n != 0 ? static_cast<pointer>(alloc::allocate(sizeof(T) * n)) : 0;
+			return n != 0 ? static_cast<pointer>(default_alloc_template::allocate(sizeof(T) * n)) : 0;
 		}
 		void deallocate(pointer ptr)
 		{
-			alloc::deallocate(ptr);
+			default_alloc_template::deallocate(ptr);
 		}
 		void deallocate(pointer ptr, size_type n)
 		{
-			if (n != 0)alloc::deallocate(ptr, n);
+			if (n != 0)default_alloc_template::deallocate(ptr, n);
 		}
 		pointer address(reference x)const
 		{
