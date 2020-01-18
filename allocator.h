@@ -1,3 +1,4 @@
+/* untested */
 #pragma once
 #ifndef TINYSTL_ALLOCATE_H
 #define TINYSTL_ALLOCATE_H
