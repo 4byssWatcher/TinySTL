@@ -1,7 +1,7 @@
 /* untested */
 #pragma once
-#ifndef TINYSTL_ALLOCATE_H
-#define TINYSTL_ALLOCATE_H
+#ifndef _TINYSTL_ALLOCATE_H_
+#define _TINYSTL_ALLOCATE_H_
 
 #include "alloc.h"
 
@@ -17,6 +17,7 @@ namespace TinySTL
 		typedef    T&          reference;
 		typedef    size_t      size_type;
 		typedef    const T*    const_pointer;
+		typedef    const T&    const_reference;
 		typedef    ptrdiff_t   difference_type;
 
 		template <typename U>
@@ -24,19 +25,19 @@ namespace TinySTL
 		{
 			typedef allocator<U> other;
 		};
-		pointer allocate()
+		static pointer allocate()
 		{
 			return static_cast<pointer>(default_alloc_template::allocate(sizeof(T)));
 		}
-		pointer allocate(size_type n)
+		static pointer allocate(size_type n)
 		{
 			return n != 0 ? static_cast<pointer>(default_alloc_template::allocate(sizeof(T) * n)) : 0;
 		}
-		void deallocate(pointer ptr)
+		static void deallocate(pointer ptr)
 		{
 			default_alloc_template::deallocate(ptr);
 		}
-		void deallocate(pointer ptr, size_type n)
+		static void deallocate(pointer ptr, size_type n)
 		{
 			if (n != 0)default_alloc_template::deallocate(ptr, n);
 		}
@@ -44,23 +45,23 @@ namespace TinySTL
 		{
 			return (pointer)&x;
 		}
-		const_pointer address(reference x)const
+		const_pointer address(const_reference x)const
 		{
 			return (const_pointer)&x;
 		}
 		size_type max_size()const
 		{
-			return size_t(-1) / sizeof(T);
+			return size_type(UINT_MAX/sizeof(T));
 		}
-		void construct(pointer p, const T& value)
+		static void construct(pointer p, const T& value)
 		{
 			new(p) T(value);
 		}
-		void destroy(pointer p)
+		static void destroy(pointer p)
 		{
 			p->~T();
 		}
-		void destroy(pointer first, pointer last)
+		static void destroy(pointer first, pointer last)
 		{
 			for (; first != last; ++first)
 				first->~T();
@@ -72,19 +73,19 @@ namespace TinySTL
 	class simple_alloc
 	{
 	public:
-		pointer allocate()
+		static T* allocate()
 		{
-			return static_cast<pointer>(Alloc::allocate(sizeof(T)));
+			return static_cast<T*>(Alloc::allocate(sizeof(T)));
 		}
-		pointer allocate(size_type n)
+		static T* allocate(size_t n)
 		{
-			return n != 0 ? static_cast<pointer>(Alloc::allocate(sizeof(T) * n)) : 0;
+			return n != 0 ? static_cast<T*>(Alloc::allocate(sizeof(T) * n)) : 0;
 		}
-		void deallocate(pointer ptr)
+		static void deallocate(T* ptr)
 		{
 			Alloc::deallocate(ptr);
 		}
-		void deallocate(pointer ptr, size_type n)
+		static void deallocate(T* ptr, size_t n)
 		{
 			if (n != 0)Alloc::deallocate(ptr, n);
 		}
@@ -93,4 +94,4 @@ namespace TinySTL
 
 }
 
-#endif /* TINYSTL_ALLOCATE_H */
+#endif /* _TINYSTL_ALLOCATE_H_ */

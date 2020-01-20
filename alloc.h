@@ -1,7 +1,7 @@
 /* untested */
 #pragma once
-#ifndef TINYSTL_ALLOC_H
-#define TINYSTL_ALLOC_H
+#ifndef _TINYSTL_ALLOC_H_
+#define _TINYSTL_ALLOC_H_
 
 #ifndef THROW_BAD_ALLOC
 #   include <stdio.h>
@@ -9,11 +9,11 @@
 #   define THROW_BAD_ALLOC fprintf(stderr,"out of memory\n");exit(1)
 #endif /* THROW_BAD_ALLOC */
 
-#include "string.h"
+//#include "string.h"
 
 enum {ALIGN=8};
 enum {MAX_BYTES=128};
-enum {NFREELISTS=MAX_BYTES/ALIGN};
+enum {NFREELISTS=(MAX_BYTES/ALIGN)};
 
 namespace TinySTL
 {
@@ -34,21 +34,21 @@ namespace TinySTL
         static void *allocate(size_t bytes)
         {
             void *ret=malloc(bytes);
-            if(0==ret)ret=oom_malloc();
+            if(0==ret)ret=oom_malloc(bytes);
             return ret;
         }
 		static void deallocate(void *ptr, size_t bytes)
         {   
-            free(*ptr);
+            free(ptr);
         }
 		static void *reallocate(void *ptr, size_t old_sz, size_t new_sz)
         {
             void *ret=realloc(ptr,new_sz);
-            if(0==ret)ret=oom_realloc(p,new_sz);
+            if(0==ret)ret=oom_realloc(ptr,new_sz);
             return ret;
         }
 
-    }
+    };
 
     class default_alloc_template
     {
@@ -61,8 +61,7 @@ namespace TinySTL
             union obj *free_list_link;
             char client_data[1];
         };
-    private:
-        obj *free_list[NFREELISTS];
+        static obj* free_list[NFREELISTS];
     private:
         /* round up to a multiple of ALIGN(ALIGN==2^n) */
         static size_t round_up(size_t bytes)
@@ -73,7 +72,7 @@ namespace TinySTL
         {
 			return (((bytes)+ALIGN - 1) / ALIGN - 1);
 		}
-        static char *chunk_alloc(size_t size, size_t& nobjs);
+        static char *chunk_alloc(size_t size, int& nobjs);
 		static void *refill(size_t n);
 		
     public:
@@ -88,15 +87,19 @@ namespace TinySTL
             {
                 obj** my_free_list;
                 my_free_list=free_list+freelist_index(bytes);
-                ret=*my_free_list;
-                if(0==ret)ret=refill(round_up(bytes));
-                else *my_free_list=ret->free_list_link;
+                obj *result=*my_free_list;
+                if(0==result)ret=refill(round_up(bytes));
+                else 
+                {
+                    *my_free_list=result->free_list_link;
+                    ret=result;
+                }
             }
             return ret;
         }
 		static void deallocate(void *ptr, size_t bytes)
         {
-            obj *q=ptr;
+            obj *q=(obj *)(ptr);
 
             if(bytes>(size_t)MAX_BYTES)
                 malloc_alloc_template::deallocate(ptr,bytes);
@@ -109,7 +112,7 @@ namespace TinySTL
             }
         }
 		static void *reallocate(void *ptr, size_t old_sz, size_t new_sz);
-    }
+    };
 
     void*
     default_alloc_template::reallocate(void *ptr, size_t old_sz, size_t new_sz)
@@ -117,19 +120,19 @@ namespace TinySTL
         void *ret;
         size_t copy_sz;
 
-        if(old_sz>(size_t)MAX_BYTES && new_sz>size_t)MAX_BYTES)
+        if(old_sz>(size_t)MAX_BYTES && new_sz>(size_t)MAX_BYTES)
             return realloc(ptr,new_sz);
         if(round_up(old_sz)==round_up(new_sz))
             return ptr;
         ret=allocate(new_sz);
         copy_sz=new_sz>old_sz?old_sz:new_sz;
-        memcpy(ret,ptr,copy_sz);
+        //memcpy(ret,ptr,copy_sz);
         deallocate(ptr,old_sz);
         return ret;
     }
 
     char* 
-    default_alloc_template::chunk_alloc(size_t size, size_t& nobjs)
+    default_alloc_template::chunk_alloc(size_t size, int& nobjs)
     {
         char *ret;
         size_t total_bytes=size*nobjs;
@@ -144,18 +147,18 @@ namespace TinySTL
         else if(left_bytes>=size)
         {
             nobjs=(int)(left_bytes/size);
-            total_bytes=size*nobjs;
             ret=start_free;
             start_free+=size*nobjs;
+            return ret;
         }
         else
         {
             size_t bytes_to_get=2*total_bytes+round_up(heap_size>>4);
             /* make use of the left-over piece */
-            if(bytes_left>0)
+            if(left_bytes>0)
             {
-                obj **my_free_list=free_list+freelist_index(bytes_left);
-                (obj *)start_free->free_list_link=*my_free_list;
+                obj **my_free_list=free_list+freelist_index(left_bytes);
+                ((obj *)start_free)->free_list_link=*my_free_list;
                 *my_free_list=(obj *)start_free;
             }
             start_free=(char*)malloc(bytes_to_get);
@@ -189,7 +192,7 @@ namespace TinySTL
         
     }
 
-    char* 
+    void* 
     default_alloc_template::refill(size_t n)
     {
         int nobjs=20;
@@ -197,14 +200,14 @@ namespace TinySTL
         obj **my_free_list;
         obj *ret,*current_obj,*next_obj;
 
-        if(1==chunk)return chunk;
+        if(1==nobjs)return chunk;
         my_free_list=free_list+freelist_index(n);
-        ret=chunk;
-        *my_free_list=next_obj=(obj *)chunk+n;
+        ret=(obj *)chunk;
+        *my_free_list=next_obj=(obj *)(chunk+n);
         for(int i=1;;++i)
         {
             current_obj=next_obj;
-            next_obj=(obj *)(next_obj+n);
+            next_obj=(obj *)((char *)next_obj+n);
             if(nobjs-i==1)
             {
                 current_obj->free_list_link=0;
@@ -218,7 +221,7 @@ namespace TinySTL
     char* default_alloc_template::start_free=0;
     char* default_alloc_template::end_free=0;
     size_t default_alloc_template::heap_size=0;
-
+    default_alloc_template::obj* default_alloc_template::free_list[NFREELISTS]={0};
 }
 
-#endif /* TINYSTL_ALLOC_H */
+#endif /* _TINYSTL_ALLOC_H_ */
