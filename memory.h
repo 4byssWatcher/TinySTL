@@ -1,5 +1,6 @@
 #pragma once
 #include <cstddef>
+#include <functional>
 #ifndef _TINYSTL_MEMORY_H_
 #define _TINYSTL_MEMORY_H_
 
@@ -8,22 +9,25 @@ namespace TinySTL
 	template<class T>
 	class default_deleter
 	{
+	public:
 		void operator ()(T* ptr) { if (ptr)delete ptr; }
 	};
 	/* for array */
 	template<class T>
 	class default_deleter<T[]>
 	{
+	public:
 		void operator ()(T* ptr) { if (ptr)delete[] ptr; }
 	};
 
+	/* pending modification for EBO */
 	template<class T, class D = default_deleter<T> >
 	class unique_ptr
 	{
 	public:
 		typedef  T    element_type;
 		typedef  D    deleter_type;
-		typedef  T* pointer;
+		typedef  T*   pointer;
 	private:
 		pointer       data;
 		deleter_type  deleter;
@@ -38,12 +42,7 @@ namespace TinySTL
 		}
 		unique_ptr& operator = (unique_ptr&& _up)
 		{
-			if (&_up != this)
-			{
-				clean();
-				data = _up.data;
-				_up.data = nullptr;
-			}
+			this->swap(_up);
 			return *this;
 		}
 
@@ -65,7 +64,7 @@ namespace TinySTL
 		const element_type& operator *()const { return *data; }
 
 		pointer operator ->() { return data; }
-		const poiner operator ->()const { return data; }
+		const pointer operator ->()const { return data; }
 
 
 
@@ -106,19 +105,19 @@ namespace TinySTL
 	template <class T1, class D1, class T2, class D2>
 	bool operator== (const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs)
 	{
-		return lhs.data == rhs.data;
+		return lhs.get() == rhs.get();
 	}
 
 	template <class T, class D>
 	bool operator== (const unique_ptr<T, D>& lhs, nullptr_t _p)
 	{
-		return lhs.data == _p;
+		return lhs.get() == _p;
 	}
 
 	template <class T, class D>
 	bool operator== (nullptr_t _p, const unique_ptr<T, D>& rhs)
 	{
-		return _p == rhs.data;
+		return _p == rhs.get();
 	}
 
 
@@ -126,19 +125,19 @@ namespace TinySTL
 	template <class T1, class D1, class T2, class D2>
 	bool operator!= (const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs)
 	{
-		return lhs.data != rhs.data;
+		return lhs.get() != rhs.get();
 	}
 
 	template <class T, class D>
 	bool operator!= (const unique_ptr<T, D>& lhs, nullptr_t _p)
 	{
-		return lhs.data != _p;
+		return lhs.get() != _p;
 	}
 
 	template <class T, class D>
 	bool operator!= (nullptr_t _p, const unique_ptr<T, D>& rhs)
 	{
-		return _p != rhs.data;
+		return _p != rhs.get();
 	}
 
 
@@ -146,25 +145,25 @@ namespace TinySTL
 	template <class T1, class D1, class T2, class D2>
 	bool operator< (const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs)
 	{
-		return lhs.data < rhs.data;
+		return lhs.get() < rhs.get();
 	}
 
 	template <class T1, class D1, class T2, class D2>
 	bool operator<= (const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs)
 	{
-		return lhs.data <= rhs.data;
+		return lhs.get() <= rhs.get();
 	}
 
 	template <class T1, class D1, class T2, class D2>
 	bool operator> (const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs)
 	{
-		return lhs.data > rhs.data;
+		return lhs.get() > rhs.get();
 	}
 
 	template <class T1, class D1, class T2, class D2>
 	bool operator>= (const unique_ptr<T1, D1>& lhs, const unique_ptr<T2, D2>& rhs)
 	{
-		return lhs.data >= rhs.data;
+		return lhs.get() >= rhs.get();
 	}
 
 	template <class T, class... Targs>
@@ -172,6 +171,159 @@ namespace TinySTL
 	{
 		return unique_ptr<T>(new T(std::forward<Targs>(args)...));
 	}
+
+	template<class T>
+	void _default_deleter(T* _data)
+	{
+		if (_data)delete _data;
+	}
+
+	template<class T>
+	class ref_type
+	{
+	public:
+		using element_type = T;
+		using deleter_type = std::function<void(T*)>;
+		using pointer = T*;
+	public:
+		size_t        refcount;
+		pointer       data;
+		deleter_type  deleter;
+	public:
+		explicit ref_type(T* _data = nullptr, deleter_type _del = _default_deleter<T>)
+			:refcount(0), data(_data), deleter(_del)
+		{
+			if (data)refcount = 1;
+		}
+		~ref_type()
+		{
+			--refcount;
+			if (0 == refcount)deleter(data);
+			data = nullptr;
+		}
+	};
+
+
+	template<class T>
+	class shared_ptr
+	{
+	public:
+		typedef  T    element_type;
+		typedef  T*   pointer;
+	private:
+		ref_type<T>*  ref;
+
+	public:
+		void dec_ref()
+		{
+			if (ref->refcount && --ref->refcount==0)
+			{
+				ref->deleter(ref->data);
+				ref->data = nullptr;
+			}
+		}
+
+		void copy_ref(ref_type<T>* _r)
+		{
+			ref = _r;
+			ref->refcount++;
+		}
+
+	public:
+		explicit shared_ptr(T* _data = nullptr) :ref(new ref_type<T>(_data)) {}
+
+		template <class D>
+		shared_ptr(T* _data, D _del) : ref(new ref_type<T>(_data, _del)) {}
+
+		shared_ptr(const shared_ptr& _sp)
+		{
+			copy_ref(_sp.ref);
+		}
+
+		shared_ptr& operator = (shared_ptr& _sp)
+		{
+			if (this != &_sp)
+			{
+				dec_ref();
+				copy_ref(_sp.ref);
+			}
+		}
+
+		~shared_ptr()
+		{
+			dec_ref();
+		}
+
+		pointer get() { return ref->data; }
+	};
+
+	template <class T1, class T2>
+	bool operator== (const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs)
+	{
+		return lhs.get() == rhs.get();
+	}
+
+	template <class T>
+	bool operator== (const shared_ptr<T>& lhs, nullptr_t _p)
+	{
+		return lhs.get() == _p;
+	}
+
+	template <class T>
+	bool operator== (nullptr_t _p, const shared_ptr<T>& rhs)
+	{
+		return _p == rhs.get();
+	}
+
+
+
+	template <class T1, class T2>
+	bool operator!= (const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs)
+	{
+		return lhs.get() != rhs.get();
+	}
+
+	template <class T>
+	bool operator!= (const shared_ptr<T>& lhs, nullptr_t _p)
+	{
+		return lhs.get() != _p;
+	}
+
+	template <class T>
+	bool operator!= (nullptr_t _p, const shared_ptr<T>& rhs)
+	{
+		return _p != rhs.get();
+	}
+
+
+
+	template <class T1, class T2>
+	bool operator< (const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs)
+	{
+		return lhs.get() < rhs.get();
+	}
+	template <class T1, class T2>
+	bool operator<= (const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs)
+	{
+		return lhs.get() <= rhs.get();
+	}
+	template <class T1, class T2>
+	bool operator> (const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs)
+	{
+		return lhs.get() > rhs.get();
+	}
+	template <class T1, class T2>
+	bool operator>= (const shared_ptr<T1>& lhs, const shared_ptr<T2>& rhs)
+	{
+		return lhs.get() >= rhs.get();
+	}
+
+	template<class T,class...Targs>
+	shared_ptr<T>make_shared(Targs&&...args)
+	{
+		return shared_ptr<class T>(new T(std::forward<Targs>((args)...)));
+	}
+
 }
 
 #endif /* _TINYSTL_MEMORY_H_ */
