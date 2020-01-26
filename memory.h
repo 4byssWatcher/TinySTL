@@ -208,8 +208,9 @@ namespace TinySTL
 	class shared_ptr
 	{
 	public:
-		typedef  T    element_type;
-		typedef  T*   pointer;
+		using element_type = T;
+		using deleter_type = std::function<void(T*)>;
+		using pointer = T*;
 	private:
 		ref_type<T>*  ref;
 
@@ -255,6 +256,18 @@ namespace TinySTL
 		}
 
 		pointer get() { return ref->data; }
+		const pointer get()const { return ref->data; }
+
+		deleter_type get_deleter() { return ref->deleter; }
+		const deleter_type get_deleter()const { return ref->deleter; }
+
+		operator bool() { return ref->data != nullptr; }
+
+		element_type& operator *() { return *(ref->data); }
+		const element_type& operator *()const { return *(ref->data); }
+
+		pointer operator ->() { return ref->data; }
+		const pointer operator ->()const { return ref->data; }
 	};
 
 	template <class T1, class T2>
