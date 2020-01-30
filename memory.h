@@ -169,7 +169,7 @@ namespace TinySTL
 	template <class T, class... Targs>
 	unique_ptr<T> make_unique(Targs&&... args)
 	{
-		return unique_ptr<T>(new T(std::forward<Targs>(args)...));
+		return unique_ptr<T>(new T(forward<Targs>(args)...));
 	}
 
 	template<class T>
@@ -334,7 +334,7 @@ namespace TinySTL
 	template<class T,class...Targs>
 	shared_ptr<T>make_shared(Targs&&...args)
 	{
-		return shared_ptr<class T>(new T(std::forward<Targs>((args)...)));
+		return shared_ptr<class T>(new T(forward<Targs>((args)...)));
 	}
 
 }
