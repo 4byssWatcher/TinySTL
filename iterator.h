@@ -4,13 +4,13 @@
 
 namespace TinySTL
 {
-    class input_iterator_tag {};
-	class output_iterator_tag {};
+    class input_iterator_tag{};
+	class output_iterator_tag{};
 	class forward_iterator_tag :public input_iterator_tag {};
 	class bidirectional_iterator_tag :public forward_iterator_tag {};
 	class random_access_iterator_tag :public bidirectional_iterator_tag {};
 
-    template<class T, class Distance>
+    template<class T,class Distance>
     class input_iterator
     {
         typedef input_iterator_tag  iterator_category;
@@ -20,7 +20,7 @@ namespace TinySTL
         typedef T&                  reference;
     };
 
-    template<class T, class Distance>
+    template<class T,class Distance>
     class output_iterator
     {
         typedef output_iterator_tag  iterator_category;
@@ -30,7 +30,7 @@ namespace TinySTL
         typedef void                 reference;
     };
 
-    template<class T, class Distance>
+    template<class T,class Distance>
     class forward_iterator
     {
         typedef forward_iterator_tag  iterator_category;
@@ -40,7 +40,7 @@ namespace TinySTL
         typedef T&                    reference;
     };
 
-    template<class T, class Distance>
+    template<class T,class Distance>
     class bidirectional_iterator
     {
         typedef bidirectional_iterator_tag  iterator_category;
@@ -50,7 +50,7 @@ namespace TinySTL
         typedef T&                          reference;
     };
 
-    template<class T, class Distance>
+    template<class T,class Distance>
     class random_access_iterator
     {
         typedef random_access_iterator_tag  iterator_category;
@@ -60,7 +60,7 @@ namespace TinySTL
         typedef T&                          reference;
     };
 
-    template<class Category, class T, class Distance = ptrdiff_t, class Pointer = T*, class Reference = T&>
+    template<class Category,class T,class Distance=ptrdiff_t,class Pointer=T*,class Reference=T&>
     class iterator
     {
         typedef Category  iterator_category;

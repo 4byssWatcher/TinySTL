@@ -7,19 +7,19 @@ namespace TinySTL
     template<class T>
     class remove_reference
     {
-        typedef type T;
+        typedef T type;
     };
 
     template<class T>
     class remove_reference<T&>
     {
-        typedef type T;
+        typedef T type;
     };
 
     template<class T>
     class remove_reference<T&&>
     {
-        typedef type T;
+        typedef T type;
     };
 
     /* ... */

@@ -25,23 +25,17 @@ namespace TinySTL
 	typename remove_reference<T>::type&&
 	move(T&& x)
 	{
-		return static_cast<remove_reference<decltype(x)>::type>(x);
-	}
-
-	template<class T1, class T2>
-	pair<T1, T2> make_pair(T1 x, T2 y)
-	{
-		return pair<T1, T2>(forward<T1>(x), forward<T2>(y));
+		return static_cast<typename remove_reference<decltype(x)>::type>(x);
 	}
 
 	template <class T>
-	inline T&& forward(typename remove_reference<T>::type& t)
+	T&& forward(typename remove_reference<T>::type& t)
 	{
 		return static_cast<T&&>(t);
 	}
 
 	template <class T>
-	inline T&& forward(typename remove_reference<T>::type&& t)
+	T&& forward(typename remove_reference<T>::type&& t)
 	{
 		return static_cast<T&&>(t);
 	}
@@ -56,21 +50,22 @@ namespace TinySTL
 		T1 first;
 		T2 second;
 	public:
-		pair() {}
+		pair() :first(), second() {}
 
 		template<class U, class V>
 		pair(const pair<U, V>& x) :first(x.first), second(x.second) {}
 
-		pair(pair<U, V>&& x) :first(forward<T1>(x.first)), second(forward<T2>(x.second)) {}
+		template<class U, class V>
+		pair(pair<U, V>&& x) :first(forward(x.first)), second(forward(x.second)) {}
 
-		pair(const pair& x) :first(x.first), second(x.second) {}
+		pair(const pair& x) = default;
 
-		pair(pair&& x) :first(forward<T1>(x.first)), second(forward<T2>(x.second)) {}
+		pair(pair&& x) = default;
 
 		pair(const T1& x, const T2& y) :first(x), second(y) {}
 
 		template<class U, class V>
-		pair(U&& x, V&& y) : first(forward<T1>(x)), second(forward<T2>(y)) {}
+		pair(U&& x, V&& y) : first(forward(x)), second(forward(y)) {}
 
 		pair& operator =(const pair& x)
 		{
@@ -81,8 +76,8 @@ namespace TinySTL
 
 		pair& operator =(pair&& x)
 		{
-			first = forward<T1>(x.first);
-			second = forward<T2>(x.second);
+			first = forward(x.first);
+			second = forward(x.second);
 			return *this;
 		}
 
@@ -97,8 +92,8 @@ namespace TinySTL
 		template<class U,class V>
 		pair& operator =(pair<U,V>&& x)
 		{
-			first = forward<T1>(x.first);
-			second = forward<T2>(x.second);
+			first = forward(x.first);
+			second = forward(x.second);
 			return *this;
 		}
 
@@ -108,36 +103,55 @@ namespace TinySTL
 			swap(first, x.first);
 			swap(second, x.second);
 		}
-
-		bool operator== (const pair& lhs, const pair& rhs)
-		{
-			return lhs.first == rhs.first && lhs.second == rhs.second;
-		}
-		bool operator!= (const pair& lhs, const pair& rhs)
-		{
-			return !(lhs == rhs);
-		}
-		bool operator<  (const pair& lhs, const pair& rhs)
-		{
-			return lhs.first < rhs.first || (lhs.first == rhs.first && lhs.second < rhs.second);
-		}
-		bool operator<= (const pair& lhs, const pair& rhs)
-		{
-			return !(rhs < lhs);
-		}
-		bool operator>(const pair& lhs, const pair& rhs)
-		{
-			return rhs < lhs;
-		}
-		bool operator>= (const pair& lhs, const pair& rhs)
-		{
-			return !(lhs < rhs);
-		}
-		void swap(pair& x, pair& y)
-		{
-			x.swap(y);
-		}
+		friend bool operator== (const pair& lhs, const pair& rhs);
+		friend bool operator!= (const pair& lhs, const pair& rhs);
+		friend bool operator<  (const pair& lhs, const pair& rhs);
+		friend bool operator<= (const pair& lhs, const pair& rhs);
+		friend bool operator>  (const pair& lhs, const pair& rhs);
+		friend bool operator>= (const pair& lhs, const pair& rhs);
 	};
+	template<class T1, class T2>
+	bool operator== (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return lhs.first == rhs.first && lhs.second == rhs.second;
+	}
+	template<class T1, class T2>
+	bool operator!= (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return !(lhs == rhs);
+	}
+	template<class T1, class T2>
+	bool operator<  (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return lhs.first < rhs.first || (lhs.first == rhs.first && lhs.second < rhs.second);
+	}
+	template<class T1, class T2>
+	bool operator<= (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return !(rhs < lhs);
+	}
+	template<class T1, class T2>
+	bool operator>  (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return rhs < lhs;
+	}
+	template<class T1, class T2>
+	bool operator>= (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return !(lhs < rhs);
+	}
+
+	template<class T1, class T2>
+	void swap(pair<T1, T2>& x, pair<T1, T2>& y)
+	{
+		x.swap(y);
+	}
+
+	template<class T1, class T2>
+	pair<T1, T2> make_pair(T1&& x, T2&& y)
+	{
+		return (pair<T1, T2>(forward<T1>(x), forward<T2>(y)));
+	}
 }
 
 #endif /* _TINYSTL_UTILITY_H_ */

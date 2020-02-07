@@ -1,8 +1,11 @@
 #pragma once
-#include <cstddef>
-#include <functional>
 #ifndef _TINYSTL_MEMORY_H_
 #define _TINYSTL_MEMORY_H_
+
+#include <cstddef>
+#include <functional>
+#include "iterator.h"
+#include "utility.h"
 
 namespace TinySTL
 {
