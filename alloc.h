@@ -9,7 +9,7 @@
 #   define THROW_BAD_ALLOC fprintf(stderr,"out of memory\n");exit(1)
 #endif /* THROW_BAD_ALLOC */
 
-//#include "string.h"
+#include "string.h"
 
 enum {ALIGN=8};
 enum {MAX_BYTES=128};
@@ -126,7 +126,7 @@ namespace TinySTL
             return ptr;
         ret=allocate(new_sz);
         copy_sz=new_sz>old_sz?old_sz:new_sz;
-        //memcpy(ret,ptr,copy_sz);
+        memcpy(ret,ptr,copy_sz);
         deallocate(ptr,old_sz);
         return ret;
     }

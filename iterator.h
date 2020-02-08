@@ -13,6 +13,7 @@ namespace TinySTL
     template<class T,class Distance>
     class input_iterator
     {
+    public:
         typedef input_iterator_tag  iterator_category;
         typedef T                   value_type;
         typedef Distance            difference_type;
@@ -23,6 +24,7 @@ namespace TinySTL
     template<class T,class Distance>
     class output_iterator
     {
+    public:
         typedef output_iterator_tag  iterator_category;
         typedef void                 value_type;
         typedef void                 difference_type;
@@ -33,6 +35,7 @@ namespace TinySTL
     template<class T,class Distance>
     class forward_iterator
     {
+    public:
         typedef forward_iterator_tag  iterator_category;
         typedef T                     value_type;
         typedef Distance              difference_type;
@@ -43,6 +46,7 @@ namespace TinySTL
     template<class T,class Distance>
     class bidirectional_iterator
     {
+    public:
         typedef bidirectional_iterator_tag  iterator_category;
         typedef T                           value_type;
         typedef Distance                    difference_type;
@@ -53,6 +57,7 @@ namespace TinySTL
     template<class T,class Distance>
     class random_access_iterator
     {
+    public:
         typedef random_access_iterator_tag  iterator_category;
         typedef T                           value_type;
         typedef Distance                    difference_type;
@@ -63,6 +68,7 @@ namespace TinySTL
     template<class Category,class T,class Distance=ptrdiff_t,class Pointer=T*,class Reference=T&>
     class iterator
     {
+    public:
         typedef Category  iterator_category;
         typedef T         value_type;
         typedef Distance  difference_type;
@@ -73,6 +79,7 @@ namespace TinySTL
     template<class Iterator>
     class iterator_traits
     {
+    public:
         typedef typename Iterator::iterator_category  iterator_category;
         typedef typename Iterator::value_type         value_type;
         typedef typename Iterator::difference_type    difference_type;
@@ -83,6 +90,7 @@ namespace TinySTL
     template<class T>
     class iterator_traits<T*>
     {
+    public:
         typedef random_access_iterator_tag    iterator_category;
         typedef T                             value_type;
         typedef ptrdiff_t                     difference_type;
@@ -93,6 +101,7 @@ namespace TinySTL
     template<class T>
     class iterator_traits<const T*>
     {
+    public:
         typedef random_access_iterator_tag    iterator_category;
         typedef T                             value_type;
         typedef ptrdiff_t                     difference_type;

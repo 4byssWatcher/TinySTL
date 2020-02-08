@@ -7,6 +7,7 @@ namespace TinySTL
     template <class Arg, class Result>
     class unary_function
     {
+    public:
         typedef  Arg     argument_type;
         typedef  Result  result_type;
     };
@@ -14,6 +15,7 @@ namespace TinySTL
     template <class Arg1, class Arg2, class Result>
     class binary_function
     {
+    public:
         typedef  Arg1    first_argument_type;
         typedef  Arg2    second_argument_type;
         typedef  Result  result_type;
@@ -22,12 +24,14 @@ namespace TinySTL
     template<class Arg1, class Arg2, class Result>
     class equal_to:public binary_function<Arg1, Arg2, Result>
     {
+    public:
         bool operator ()(const Arg1& x, const Arg2& y) { return x == y; }
     };
 
     template<class Arg1,class Arg2,class Result>
     class less :public binary_function<Arg1, Arg2, Result>
     {
+    public:
         bool operator()(const Arg1& x, const Arg2& y) { return x < y; }
     };
 

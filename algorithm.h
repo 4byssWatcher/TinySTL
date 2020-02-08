@@ -14,7 +14,7 @@ const int STABLE_SORT_THRESHOLD = 15;
 
 namespace TinySTL
 {
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	bool all_of(InputIter first, InputIter last, UnaryPredicate pred)
 	{
 		for (; first != last; ++first)
@@ -25,7 +25,7 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	bool any_of(InputIter first, InputIter last, UnaryPredicate pred)
 	{
 		for (; first != last; ++first)
@@ -36,7 +36,7 @@ namespace TinySTL
 		return false;
 	}
 
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	bool none_of(InputIter first, InputIter last, UnaryPredicate pred)
 	{
 		for (; first != last; ++first)
@@ -47,13 +47,13 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class T>
+	template <class T>
 	inline const T& median(const T& x, const T& y, const T& z)
 	{
-		return median(x, y, z, less<T, T>);
+		return median(x, y, z, less<T, T, bool>());
 	}
 
-	template<class T, class Compare>
+	template <class T, class Compare>
 	inline const T& median(const T& x, const T& y,
 						   const T& z, Compare comp)
 	{
@@ -69,7 +69,7 @@ namespace TinySTL
 	}
 
 	/* return func:for purpose like getting the sum/total execution count? */
-	template<class InputIter, class Function>
+	template <class InputIter, class Function>
 	Function for_each(InputIter first, InputIter last, Function func)
 	{
 		for (; first != last; ++first)
@@ -77,7 +77,7 @@ namespace TinySTL
 		return move(func);
 	}
 
-	template<class InputIter, class T>
+	template <class InputIter, class T>
 	InputIter find(InputIter first, InputIter last, const T& val)
 	{
 		for (; first != last; ++first)
@@ -87,7 +87,7 @@ namespace TinySTL
 		return last;
 	}
 
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	InputIter find_if(InputIter first, InputIter last, UnaryPredicate pred)
 	{
 		for (; first != last; ++first)
@@ -97,7 +97,7 @@ namespace TinySTL
 		return last;
 	}
 
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	InputIter find_if_not(InputIter first, InputIter last, UnaryPredicate pred)
 	{
 		for (; first != last; ++first)
@@ -107,7 +107,7 @@ namespace TinySTL
 		return last;
 	}
 
-	template<class ForwardIter1, class ForwardIter2>
+	template <class ForwardIter1, class ForwardIter2>
 	ForwardIter1 find_end(ForwardIter1 first1, ForwardIter1 last1,
 						  ForwardIter2 first2, ForwardIter2 last2)
 	{
@@ -117,7 +117,7 @@ namespace TinySTL
 						equal_to<val_t1, val_t2>);
 	}
 
-	template<class ForwardIter1, class ForwardIter2, class BinaryPredicate>
+	template <class ForwardIter1, class ForwardIter2, class BinaryPredicate>
 	ForwardIter1 find_end(ForwardIter1 first1, ForwardIter1 last1,
 						  ForwardIter2 first2, ForwardIter2 last2,
 						  BinaryPredicate pred)
@@ -141,7 +141,7 @@ namespace TinySTL
 	}
 
 	/*  not sure
-	template<class BidirectIter1,class BidirectIter2>
+	template <class BidirectIter1,class BidirectIter2>
 	BidirectIter find_end(BidirectIter1 first1,BidirectIter1 last1,
 						  BidirectIter2 first2,BidirectIter2 last2)
 	{
@@ -162,7 +162,7 @@ namespace TinySTL
 	}
 	*/
 
-	template<class InputIter1, class ForwardIter2>
+	template <class InputIter1, class ForwardIter2>
 	InputIter1 find_first_of(InputIter1 first1, InputIter1 last1,
 							 ForwardIter2 first2, ForwardIter2 last2)
 	{
@@ -172,7 +172,7 @@ namespace TinySTL
 							 equal_to<val_t1, val_t2>);
 	}
 
-	template<class InputIter1, class ForwardIter2, class BinaryPredicate>
+	template <class InputIter1, class ForwardIter2, class BinaryPredicate>
 	InputIter1 find_first_of(InputIter1 first1, InputIter1 last1,
 							 ForwardIter2 first2, ForwardIter2 last2,
 							 BinaryPredicate pred)
@@ -190,14 +190,14 @@ namespace TinySTL
 		return last1;
 	}
 
-	template<class ForwardIter>
+	template <class ForwardIter>
 	ForwardIter adjacent_find(ForwardIter first, ForwardIter last)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
 		return adjacent_find(first, last, equal_to<val_t, val_t>);
 	}
 
-	template<class ForwardIter, class BinaryPredicate>
+	template <class ForwardIter, class BinaryPredicate>
 	ForwardIter adjacent_find(ForwardIter first, ForwardIter last, BinaryPredicate pred)
 	{
 		ForwardIter it = first++;
@@ -209,7 +209,7 @@ namespace TinySTL
 		return last;
 	}
 
-	template<class InputIter, class T>
+	template <class InputIter, class T>
 	typename iterator_traits<InputIter>::difference_type
 	count(InputIter first, InputIter last, const T& val)
 	{
@@ -222,7 +222,7 @@ namespace TinySTL
 		return ret;
 	}
 
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	typename iterator_traits<InputIter>::difference_type
 	count_if(InputIter first, InputIter last, UnaryPredicate pred)
 	{
@@ -235,7 +235,7 @@ namespace TinySTL
 		return ret;
 	}
 
-	template<class InputIter1, class InputIter2>
+	template <class InputIter1, class InputIter2>
 	pair<InputIter1, InputIter2>
 	mismatch(InputIter1 first1, InputIter1 last1, InputIter2 first2)
 	{
@@ -244,7 +244,7 @@ namespace TinySTL
 		return mismatch(first1, last1, first2, equal_to<val_t1, val_t2>);
 	}
 
-	template<class InputIter1, class InputIter2, class BinaryPredicate>
+	template <class InputIter1, class InputIter2, class BinaryPredicate>
 	pair<InputIter1, InputIter2>
 	mismatch(InputIter1 first1, InputIter1 last1,
 			 InputIter2 first2, BinaryPredicate pred)
@@ -257,7 +257,7 @@ namespace TinySTL
 		return make_pair(first1, first2);
 	}
 
-	template<class InputIter1, class InputIter2>
+	template <class InputIter1, class InputIter2>
 	bool equal(InputIter1 first1, InputIter1 last1,
 			   InputIter2 first2)
 	{
@@ -266,7 +266,7 @@ namespace TinySTL
 		return equal(first1, last1, first2, equal_to<val_t1, val_t2>);
 	}
 
-	template<class InputIter1, class InputIter2, class BinaryPredicate>
+	template <class InputIter1, class InputIter2, class BinaryPredicate>
 	bool equal(InputIter1 first1, InputIter1 last1,
 			   InputIter2 first2, BinaryPredicate pred)
 	{
@@ -279,7 +279,7 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class InputIter1, class InputIter2>
+	template <class InputIter1, class InputIter2>
 	bool is_permutation(InputIter1 first1, InputIter1 last1,
 						InputIter2 first2)
 	{
@@ -298,7 +298,7 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class InputIter1, class InputIter2, class BinaryPredicate>
+	template <class InputIter1, class InputIter2, class BinaryPredicate>
 	bool is_permutation(InputIter1 first1, InputIter1 last1,
 						InputIter2 first2, BinaryPredicate pred)
 	{
@@ -318,7 +318,7 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class ForwardIter1, class ForwardIter2>
+	template <class ForwardIter1, class ForwardIter2>
 	ForwardIter1 search(ForwardIter1 first1, ForwardIter1 last1,
 						ForwardIter2 first2, ForwardIter2 last2)
 	{
@@ -328,7 +328,7 @@ namespace TinySTL
 					  equal_to<val_t1, val_t2>);
 	}
 
-	template<class ForwardIter1, class ForwardIter2, class BinaryPredicate>
+	template <class ForwardIter1, class ForwardIter2, class BinaryPredicate>
 	ForwardIter1 search(ForwardIter1 first1, ForwardIter1 last1,
 						ForwardIter2 first2, ForwardIter2 last2,
 						BinaryPredicate pred)
@@ -349,7 +349,7 @@ namespace TinySTL
 		return last1;
 	}
 
-	template<class ForwardIter, class Size, class T>
+	template <class ForwardIter, class Size, class T>
 	ForwardIter search_n(ForwardIter first, ForwardIter last, Size n, const T& val)
 	{
 		Size i;
@@ -368,7 +368,7 @@ namespace TinySTL
 		return last;
 	}
 
-	template<class ForwardIter, class Size, class UnaryPredicate>
+	template <class ForwardIter, class Size, class UnaryPredicate>
 	ForwardIter search_n(ForwardIter first, ForwardIter last,
 						 Size n, UnaryPredicate pred)
 	{
@@ -388,7 +388,7 @@ namespace TinySTL
 		return last;
 	}
 
-	template<class InputIter, class OutputIter>
+	template <class InputIter, class OutputIter>
 	OutputIter copy(InputIter first, InputIter last, OutputIter result)
 	{
 		while (first != last)
@@ -400,7 +400,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter, class Size, class OutputIter>
+	template <class InputIter, class Size, class OutputIter>
 	OutputIter copy_n(InputIter first, Size n, OutputIter result)
 	{
 		while (n > 0)
@@ -413,7 +413,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter, class OutputIter, class UnaryPredicate>
+	template <class InputIter, class OutputIter, class UnaryPredicate>
 	OutputIter copy_if(InputIter first, InputIter last,
 					   OutputIter result, UnaryPredicate pred)
 	{
@@ -429,7 +429,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class BidirectIter1, class BidirectIter2>
+	template <class BidirectIter1, class BidirectIter2>
 	BidirectIter2 copy_backward(BidirectIter1 first, BidirectIter1 last,
 								BidirectIter2 result)
 	{
@@ -438,7 +438,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter, class Size, class OutputIter>
+	template <class InputIter, class Size, class OutputIter>
 	OutputIter move(InputIter first, InputIter last, OutputIter result)
 	{
 		while (first != last)
@@ -450,7 +450,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class BidirectIter1, class BidirectIter2>
+	template <class BidirectIter1, class BidirectIter2>
 	BidirectIter2 move_backward(BidirectIter1 first, BidirectIter1 last,
 								BidirectIter2 result)
 	{
@@ -459,7 +459,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter1, class InputIter2>
+	template <class InputIter1, class InputIter2>
 	InputIter2 swap_range(InputIter1 first1, InputIter1 last1, InputIter2 first2)
 	{
 		while (first1 != last1)
@@ -471,13 +471,13 @@ namespace TinySTL
 		return first2;
 	}
 
-	template<class InputIter1, class InputIter2>
+	template <class InputIter1, class InputIter2>
 	void iter_swap(InputIter1 x, InputIter2 y)
 	{
 		swap(*x, *y);
 	}
 
-	template<class InputIter, class OutputIter, class UnaryOperator>
+	template <class InputIter, class OutputIter, class UnaryOperator>
 	OutputIter transform(InputIter first1, InputIter last1,
 						 OutputIter first2, UnaryOperator op)
 	{
@@ -490,7 +490,7 @@ namespace TinySTL
 		return first2;
 	}
 
-	template<class ForwardIter, class T>
+	template <class ForwardIter, class T>
 	void replace(ForwardIter first, ForwardIter last,
 				 const T& old_value, const T& new_value)
 	{
@@ -502,7 +502,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class ForwardIter, class T, class UnaryPredicate>
+	template <class ForwardIter, class T, class UnaryPredicate>
 	void replace_if(ForwardIter first, ForwardIter last,
 					const T& new_value, UnaryPredicate pred)
 	{
@@ -514,7 +514,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class InputIter, class OutputIter, class T>
+	template <class InputIter, class OutputIter, class T>
 	OutputIter replace_copy(InputIter first, InputIter last, OutputIter result,
 							const T& old_value, const T& new_value)
 	{
@@ -527,7 +527,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter, class OutputIter, class T, class UnaryPredicate>
+	template <class InputIter, class OutputIter, class T, class UnaryPredicate>
 	OutputIter replace_copy_if(InputIter first, InputIter last, OutputIter result,
 							   UnaryPredicate pred, const T& new_value)
 	{
@@ -540,7 +540,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class ForwardIter, class T>
+	template <class ForwardIter, class T>
 	void fill(ForwardIter first, ForwardIter last, const T& val)
 	{
 		while (first != last)
@@ -550,7 +550,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class ForwardIter, class Size, class T>
+	template <class ForwardIter, class Size, class T>
 	ForwardIter fill_n(ForwardIter first, ForwardIter last, Size n, const T& val)
 	{
 		while (n > 0)
@@ -561,7 +561,7 @@ namespace TinySTL
 		return first;
 	}
 
-	template<class ForwardIter, class Generator>
+	template <class ForwardIter, class Generator>
 	void generate(ForwardIter first, ForwardIter last, Generator gen)
 	{
 		while (first != last)
@@ -571,7 +571,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class ForwardIter, class Size, class Generator>
+	template <class ForwardIter, class Size, class Generator>
 	ForwardIter generate_n(ForwardIter first, Size n, Generator gen)
 	{
 		while (n > 0)
@@ -582,7 +582,7 @@ namespace TinySTL
 		return first;
 	}
 
-	template<class ForwardIter, class T>
+	template <class ForwardIter, class T>
 	ForwardIter remove(ForwardIter first, ForwardIter last, const T& val)
 	{
 		ForwardIter result = first;
@@ -598,7 +598,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class ForwardIter, class UnaryPredicate>
+	template <class ForwardIter, class UnaryPredicate>
 	ForwardIter remove_if(ForwardIter first, ForwardIter last, UnaryPredicate pred)
 	{
 		ForwardIter result = first;
@@ -614,7 +614,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter, class OutputIter, class T>
+	template <class InputIter, class OutputIter, class T>
 	OutputIter remove_copy(InputIter first, InputIter last,
 						   OutputIter result, const T& val)
 	{
@@ -630,7 +630,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class InputIter, class OutputIter, class T, class UnaryPredicate>
+	template <class InputIter, class OutputIter, class T, class UnaryPredicate>
 	OutputIter remove_copy_if(InputIter first, InputIter last,
 							  OutputIter result, UnaryPredicate pred)
 	{
@@ -646,14 +646,14 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class ForwardIter>
+	template <class ForwardIter>
 	ForwardIter unique(ForwardIter first, ForwardIter last)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
 		return unique(first, last, equal_to<val_t, val_t>);
 	}
 
-	template<class ForwardIter, class BinaryPredicate>
+	template <class ForwardIter, class BinaryPredicate>
 	ForwardIter unique(ForwardIter first, ForwardIter last,
 					   BinaryPredicate pred)
 	{
@@ -667,14 +667,14 @@ namespace TinySTL
 		return ++result;
 	}
 
-	template<class InputIter, class OutputIter>
+	template <class InputIter, class OutputIter>
 	OutputIter unique_copy(InputIter first, InputIter last, OutputIter result)
 	{
 		typedef typename iterator_traits<InputIter>::value_type val_t;
 		return unique_copy(first, last, result, equal_to<val_t, val_t>);
 	}
 
-	template<class InputIter, class OutputIter, class BinaryPredicate>
+	template <class InputIter, class OutputIter, class BinaryPredicate>
 	OutputIter unique_copy(InputIter first, InputIter last,
 						   OutputIter result, BinaryPredicate pred)
 	{
@@ -688,7 +688,7 @@ namespace TinySTL
 		return ++result;
 	}
 
-	template<class BidirectIter>
+	template <class BidirectIter>
 	void reverse(BidirectIter first, BidirectIter last)
 	{
 		while ((first != last) && (first != --last))
@@ -698,7 +698,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class BidirectIter, class OutputIter>
+	template <class BidirectIter, class OutputIter>
 	OutputIter reverse_copy(BidirectIter first, BidirectIter last, OutputIter result)
 	{
 		while (first != last)
@@ -710,7 +710,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template<class ForwardIter>
+	template <class ForwardIter>
 	ForwardIter rotate(ForwardIter first, ForwardIter middle, ForwardIter last)
 	{
 		ForwardIter next = middle;
@@ -722,7 +722,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class ForwardIter, class OutputIter>
+	template <class ForwardIter, class OutputIter>
 	ForwardIter rotate_copy(ForwardIter first, ForwardIter middle,
 							ForwardIter last, OutputIter result)
 	{
@@ -735,14 +735,14 @@ namespace TinySTL
 			aren't uniformly distributed in most cases.
 		-may produce the same result each time because of the seed.
 	*/
-	template<class RandomIter>
+	template <class RandomIter>
 	void random_shuffle(RandomIter first, RandomIter last)
 	{
 		for (auto i = (last - first) - 1; i > 0; --i)
 			swap(first[i], first[rand() % (i + 1)]);
 	}
 
-	template<class RandomIter, class URNG>
+	template <class RandomIter, class URNG>
 	void shuffle(RandomIter first, RandomIter last, URNG&& gen)
 	{
 		for (auto i = (last - first) - 1; i > 0; --i)
@@ -752,7 +752,7 @@ namespace TinySTL
 		}
 	}
 
-	template<class InputIter, class UnaryPredicate>
+	template <class InputIter, class UnaryPredicate>
 	bool is_partitioned(InputIter first, InputIter last, UnaryPredicate pred)
 	{
 		while (first != last && pred(*first))
@@ -765,7 +765,7 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class ForwardIter, class UnaryPredicate>
+	template <class ForwardIter, class UnaryPredicate>
 	ForwardIter partition(ForwardIter first, ForwardIter last,
 						  UnaryPredicate pred, forward_iterator_tag)
 	{
@@ -787,7 +787,7 @@ namespace TinySTL
 		return first;
 	}
 
-	template<class BidirectIter, class UnaryPredicate>
+	template <class BidirectIter, class UnaryPredicate>
 	BidirectIter partition(BidirectIter first, BidirectIter last,
 						   UnaryPredicate pred, bidirectional_iterator_tag)
 	{
@@ -809,7 +809,7 @@ namespace TinySTL
 		return first;
 	}
 
-	template<class ForwardIter, class UnaryPredicate, class Distance>
+	template <class ForwardIter, class UnaryPredicate, class Distance>
 	ForwardIter inplace_stable_partition(ForwardIter first, ForwardIter last,
 										 UnaryPredicate pred, Distance len)
 	{
@@ -822,7 +822,7 @@ namespace TinySTL
 	}
 
 
-	template<class ForwardIter, class Pointer, class UnaryPredicate>
+	template <class ForwardIter, class Pointer, class UnaryPredicate>
 	ForwardIter adaptive_stable_partition(ForwardIter first, ForwardIter last,
 										  UnaryPredicate pred, Pointer ptr)
 	{
@@ -852,7 +852,7 @@ namespace TinySTL
 		-though using get_temporary_buffer() creates a chance to makes the funtion go faster,
 		 this implementation only calls adaptive_stable_partition() when there's enough memory.
 	*/
-	template<class ForwardIter, class UnanryPredicate>
+	template <class ForwardIter, class UnanryPredicate>
 	ForwardIter stable_partition(ForwardIter first, ForwardIter last,
 								 UnanryPredicate pred)
 	{
@@ -865,7 +865,7 @@ namespace TinySTL
 		else return adaptive_stable_partition(first, last, pred, p);
 	}
 
-	template<class InputIter, class OutputIter1,
+	template <class InputIter, class OutputIter1,
 			 class OutputIter2, class UnaryPredicate>
 	pair<OutputIter1, OutputIter2>
 	partition_copy(InputIter first, InputIter last,
@@ -890,7 +890,7 @@ namespace TinySTL
 	}
 
 	/* elements in [first,last) shall already be partitioned */
-	template<class ForwardIter,class UnaryPredicate>
+	template <class ForwardIter,class UnaryPredicate>
 	ForwardIter partition_point(ForwardIter first, ForwardIter last,
 								UnaryPredicate pred)
 	{
@@ -910,15 +910,15 @@ namespace TinySTL
 		return first;
 	}
 
-	template<class RandomIter, class T>
+	template <class RandomIter, class T>
 	RandomIter unguarded_partition(RandomIter first, RandomIter last,
 								   T pivot)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		return unguarded_partition(first, last, pivot, less<val_t, val_t>);
+		return unguarded_partition(first, last, pivot, less<val_t, val_t, bool>());
 	}
 
-	template<class RandomIter,class T,class Compare>
+	template <class RandomIter,class T,class Compare>
 	RandomIter unguarded_partition(RandomIter first, RandomIter last, 
 								   T pivot, Compare comp)
 	{
@@ -927,7 +927,7 @@ namespace TinySTL
 			while (comp(*first, pivot))
 				++first;
 			--last;
-			while (comp(*last, pivot))
+			while (comp(pivot, *last))
 				--last;
 			if (!(first < last))
 				return first;
@@ -936,14 +936,14 @@ namespace TinySTL
 		}
 	}
 
-	template<class RandomIter, class Size>
+	template <class RandomIter, class Size>
 	void introsort(RandomIter first, RandomIter last, Size depth_limit)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		introsort(first, last, depth_limit, less<val_t, val_t>);
+		introsort(first, last, depth_limit, less<val_t, val_t, bool>());
 	}
 
-	template<class RandomIter, class Size, class Compare>
+	template <class RandomIter, class Size, class Compare>
 	void introsort(RandomIter first, RandomIter last, 
 				   Size depth_limit, Compare comp)
 	{
@@ -965,28 +965,28 @@ namespace TinySTL
 		insertion_sort(first, last, comp);
 	}
 
-	template<class RandomIter>
+	template <class RandomIter>
 	void sort(RandomIter first, RandomIter last)
 	{
 		if (first != last)
 			introsort(first, last, log(last - first) * 2);
 	}
 
-	template<class RandomIter, class Compare>
+	template <class RandomIter, class Compare>
 	void sort(RandomIter first, RandomIter last, Compare comp)
 	{
 		if (first != last)
 			introsort(first, last, log(last - first) * 2, comp);
 	}
 
-	template<class RandomIter>
+	template <class RandomIter>
 	void inplace_stable_sort(RandomIter first, RandomIter last)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		inplace_stable_sort(first, last, less<val_t, val_t>);
+		inplace_stable_sort(first, last, less<val_t, val_t, bool>());
 	}
 
-	template<class RandomIter, class Compare>
+	template <class RandomIter, class Compare>
 	void inplace_stable_sort(RandomIter first, RandomIter last, Compare comp)
 	{
 		if (last - first < STABLE_SORT_THRESHOLD)
@@ -1000,15 +1000,15 @@ namespace TinySTL
 		inplace_merge(first, mid, last, comp);
 	}
 
-	template<class RandomIter, class Pointer>
+	template <class RandomIter, class Pointer>
 	void adaptive_stable_sort(RandomIter first, RandomIter last,
 							  Pointer ptr)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		adaptive_stable_sort(first, last, ptr, less<val_t, val_t>);
+		adaptive_stable_sort(first, last, ptr, less<val_t, val_t, bool>());
 	}
 
-	template<class RandomIter, class Pointer, class Compare>
+	template <class RandomIter, class Pointer, class Compare>
 	void adaptive_stable_sort(RandomIter first, RandomIter last, 
 							  Pointer ptr, Compare comp)
 	{
@@ -1020,14 +1020,14 @@ namespace TinySTL
 		copy(ptr, ptr_last, first);
 	}
 
-	template<class RandomIter>
+	template <class RandomIter>
 	void stable_sort(RandomIter first, RandomIter last)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		stable_sort(first, last, less<val_t, val_t>);
+		stable_sort(first, last, less<val_t, val_t, bool>());
 	}
 
-	template<class RandomIter, class Compare>
+	template <class RandomIter, class Compare>
 	void stable_sort(RandomIter first, RandomIter last, Compare comp)
 	{
 		if (first == last)return;
@@ -1039,15 +1039,10 @@ namespace TinySTL
 		free(p);
 	}
 
-	template<class RandomIter, class T>
-	void linear_insert(RandomIter last, T val)
-	{
-		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		linear_insert(last, val, less<val_t, val_t>);
-	}
+	/* comp : must be a comparision between T and val_t*/
 
-	template<class RandomIter, class T, class Compare>
-	void linear_insert(RandomIter last, T val, Compare comp)
+	template <class RandomIter, class T, class Compare>
+	void unguarded_linear_insert(RandomIter last, T val, Compare comp)
 	{
 		RandomIter next = last - 1;
 		while (comp(val, *next))
@@ -1059,37 +1054,56 @@ namespace TinySTL
 		*last = val;
 	}
 
-	template<class RandomIter>
-	void insertion_sort(RandomIter first, RandomIter last)
+	template <class RandomIter, class T>
+	void linear_insert(RandomIter first, RandomIter last, T*)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		insertion_sort(first, last, less<val_t, val_t>);
+		less<T, val_t, bool> comp;
+		T val = *last;
+		if (comp(val, *first))
+		{
+			copy_backward(first, last, last + 1);
+			*first = val;
+		}
+		else unguarded_linear_insert(last, val, comp);
 	}
 
-	template<class RandomIter, class Compare>
+	template <class RandomIter, class Compare, class T>
+	void linear_insert(RandomIter first, RandomIter last, Compare comp, T*)
+	{
+		T val = *last;
+		if (comp(val, *first)) 
+		{
+			copy_backward(first, last, last + 1);
+			*first = val;
+		}
+		else unguarded_linear_insert(last, val, comp);
+	}
+
+	template <class RandomIter>
+	void insertion_sort(RandomIter first, RandomIter last)
+	{
+		if (first == last)return;
+		for (RandomIter i = first + 1; i != last; ++i)
+			linear_insert(first, i, value_type(first));
+	}
+
+	template <class RandomIter, class Compare>
 	void insertion_sort(RandomIter first, RandomIter last, Compare comp)
 	{
 		if (first == last)return;
 		for (RandomIter i = first + 1; i != last; ++i)
-		{
-			auto tmp = *i;
-			if (comp(tmp, *first))
-			{
-				copy_backward(first, i, i + 1);
-				*first = tmp;
-			}
-			else linear_insert(first, i, comp);
-		}
+			linear_insert(first, i, comp, value_type(first));
 	}
 
-	template<class RandomIter>
+	template <class RandomIter>
 	void partial_sort(RandomIter first, RandomIter mid, RandomIter last)
 	{
 		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		partial_sort(first, mid, last, less<val_t, val_t>);
+		partial_sort(first, mid, last, less<val_t, val_t, bool>());
 	}
 
-	template<class RandomIter, class Compare>
+	template <class RandomIter, class Compare>
 	void partial_sort(RandomIter first, RandomIter mid, 
 					  RandomIter last, Compare comp)
 	{
@@ -1097,22 +1111,22 @@ namespace TinySTL
 		sort_heap(first, mid, comp);
 	}
 
-	template<class InputIter, class RandomIter>
+	template <class InputIter, class RandomIter>
 	void partial_sort_copy(InputIter first, InputIter last,
 						   RandomIter result_first, RandomIter result_last)
 	{
 		typedef typename iterator_traits<InputIter>::value_type val_t;
 		partial_sort_copy(first, last, result_first, result_last,
-						  less<val_t, val_t>);
+						  less<val_t, val_t, bool>());
 	}
 
-	template<class InputIter, class RandomIter, class Compare>
+	template <class InputIter, class RandomIter, class Compare>
 	void partial_sort_copy(InputIter first, InputIter last, 
 						   RandomIter result_first, RandomIter result_last,
 						   Compare comp)
 	{
 		typedef typename iterator_traits<InputIter>::difference_type Distance;
-		typedef typename iterator_traits<InputIter>::value_type T;
+		typedef typename iterator_traits<InputIter>::value_type		 T;
 		if (result_first == result_last)
 			return result_last;
 		RandomIter result_now = result_first;
@@ -1135,14 +1149,14 @@ namespace TinySTL
 		return result_now;
 	}
 
-	template<class ForwardIter>
+	template <class ForwardIter>
 	bool is_sorted(ForwardIter first, ForwardIter last)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
-		return is_sorted(first, last, less<val_t, val_t>);
+		return is_sorted(first, last, less<val_t, val_t, bool>());
 	}
 
-	template<class ForwardIter,class Compare>
+	template <class ForwardIter,class Compare>
 	bool is_sorted(ForwardIter first, ForwardIter last, Compare comp)
 	{
 		if (first == last) return true;
@@ -1156,14 +1170,14 @@ namespace TinySTL
 		return true;
 	}
 
-	template<class ForwardIter>
+	template <class ForwardIter>
 	ForwardIter is_sorted_until(ForwardIter first, ForwardIter last)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
-		return is_sorted_until(first, last, less<val_t, val_t>);
+		return is_sorted_until(first, last, less<val_t, val_t, bool>());
 	}
 
-	template<class ForwardIter, class Compare>
+	template <class ForwardIter, class Compare>
 	ForwardIter is_sorted_until(ForwardIter first, ForwardIter last, Compare comp)
 	{
 		if (first == last) return true;
@@ -1177,37 +1191,58 @@ namespace TinySTL
 		return true;
 	}
 	/* when last-first<=3, adopt insertion_sort()
-	   when last-first>3 , adopt partition for quicksort (binary) */
-	template<class RandomIter>
-	void nth_element(RandomIter first, RandomIter nth, RandomIter last)
-	{
-		typedef typename iterator_traits<RandomIter>::value_type val_t;
-		nth_element(first, nth, last, less<val_t, val_t>);
-	}
-
-	template<class RandomIter,class Compare>
-	void nth_element(RandomIter first, RandomIter nth, RandomIter last, Compare comp)
+	   when last-first>3 , adopt partition for quicksort (binary) 
+	   comp : must be comparision between T and val_t (though actually the same) */
+	template <class RandomIter, class T>
+	void _nth_element(RandomIter first, RandomIter nth, RandomIter last, T*)
 	{
 		while (last - first > 3)
 		{
 			RandomIter cut = unguarded_partition(first, last,
-												 median(*first,
-														*(first + (last - first) / 2),
-														*(last-1), comp));
+												 T(median(*first,
+														  *(first + (last - first) / 2),
+														  *(last - 1))));
+			if (cut <= nth)first = cut;
+			else last = cut;
+		}
+		insertion_sort(first, last);
+	}
+
+	template <class RandomIter, class Compare, class T>
+	void _nth_element(RandomIter first, RandomIter nth, RandomIter last, Compare comp, T*)
+	{
+		while (last - first > 3)
+		{
+			RandomIter cut = unguarded_partition(first, last,
+												 T(median(*first,
+														  *(first + (last - first) / 2),
+														  *(last-1), comp)));
 			if (cut <= nth)first = cut;
 			else last = cut;
 		}
 		insertion_sort(first, last, comp);
 	}
 
-	template<class ForwardIter, class T>
+	template <class RandomIter>
+	void nth_element(RandomIter first, RandomIter nth, RandomIter last)
+	{
+		_nth_element(first, nth, last, value_type(first));
+	}
+
+	template <class RandomIter, class Compare>
+	void nth_element(RandomIter first, RandomIter nth, RandomIter last, Compare comp)
+	{
+		_nth_element(first, nth, last, comp, value_type(first));
+	}
+
+	template <class ForwardIter, class T>
 	ForwardIter lower_bound(ForwardIter first, ForwardIter last, const T& val)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
-		return lower_bound(first, last, val, less<val_t, val_t>);
+		return lower_bound(first, last, val, less<val_t, val_t, bool>());
 	}
 
-	template<class ForwardIter,class T,class Compare>
+	template <class ForwardIter,class T,class Compare>
 	ForwardIter lower_bound(ForwardIter first, ForwardIter last,
 							const T& val, Compare comp)
 	{
@@ -1230,14 +1265,14 @@ namespace TinySTL
 		return first;
 	}
 
-	template<class ForwardIter, class T>
+	template <class ForwardIter, class T>
 	ForwardIter upper_bound(ForwardIter first, ForwardIter last, const T& val)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
-		return upper_bound(first, last, val, less<val_t, val_t>);
+		return upper_bound(first, last, val, less<val_t, val_t, bool>());
 	}
 
-	template<class ForwardIter, class T, class Compare>
+	template <class ForwardIter, class T, class Compare>
 	ForwardIter upper_bound(ForwardIter first, ForwardIter last, 
 							const T& val, Compare comp)
 	{
@@ -1265,7 +1300,7 @@ namespace TinySTL
 	equal_range(ForwardIter first, ForwardIter last, const T& val)
 	{
 		typedef typename iterator_traits<ForwardIter>::value_type val_t;
-		return equal_range(first, last, val, less<val_t, val_t>);
+		return equal_range(first, last, val, less<val_t, val_t, bool>());
 	}
 
 	template <class ForwardIter, class T, class Compare>
@@ -1298,7 +1333,7 @@ namespace TinySTL
 	{
 		typedef typename iterator_traits<InputIter1>::value_type val_t1;
 		typedef typename iterator_traits<InputIter2>::value_type val_t2;
-		return merge(first1, last1, first2, last2, result, less<val_t1, val_t2>);
+		return merge(first1, last1, first2, last2, result, less<val_t1, val_t2, bool>());
 	}
 
 	template <class InputIter1, class InputIter2, class OutputIter, class Compare>
@@ -1319,7 +1354,7 @@ namespace TinySTL
 							  BidirectIter last, Distance len1, Distance len2)
 	{
 		typedef typename iterator_traits<BidirectIter>::value_type val_t;
-		merge_without_buffer(first, mid, last, len1, len2, less<val_t, val_t>);
+		merge_without_buffer(first, mid, last, len1, len2, less<val_t, val_t, bool>());
 	}
 
 	template <class BidirectIter, class Distance, class Compare>
@@ -1364,7 +1399,7 @@ namespace TinySTL
 	void inplace_merge(BidirectIter first, BidirectIter mid, BidirectIter last)
 	{
 		typedef typename iterator_traits<BidirectIter>::value_type val_t;
-		inplace_merge(first, mid, last, less<val_t, val_t>);
+		inplace_merge(first, mid, last, less<val_t, val_t, bool>());
 	}
 	
 
@@ -1389,6 +1424,313 @@ namespace TinySTL
 		}
 		free(ptr);
 	}
+
+	template <class InputIter1, class InputIter2>
+	bool includes(InputIter1 first1, InputIter1 last1,
+				  InputIter2 first2, InputIter2 last2)
+	{
+		typedef typename iterator_traits<InputIter1>::value_type val_t1;
+		typedef typename iterator_traits<InputIter2>::value_type val_t2;
+		return includes(first1, last1, first2, last2, less<val_t1, val_t2, bool>());
+	}
+
+	template <class InputIter1, class InputIter2, class Compare>
+	bool includes(InputIter1 first1, InputIter1 last1,
+				  InputIter2 first2, InputIter2 last2, Compare comp)
+	{
+		while (first2 != last2) 
+		{
+			if ((first1 == last1) || comp(*first2, *first1))
+				return false;
+			if (!comp(*first1, *first2)) 
+				++first2;
+			++first1;
+		}
+		return true;
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter>
+	OutputIter set_union(InputIter1 first1, InputIter1 last1,
+						 InputIter2 first2, InputIter2 last2, OutputIter result)
+	{
+		typedef typename iterator_traits<InputIter1>::value_type val_t1;
+		typedef typename iterator_traits<InputIter2>::value_type val_t2;
+		return set_union(first1, last1, first2, last2, result, less<val_t1, val_t2, bool>());
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter, class Compare>
+	OutputIter set_union(InputIter1 first1, InputIter1 last1,
+						 InputIter2 first2, InputIter2 last2,
+						 OutputIter result, Compare comp)
+	{
+		while (true)
+		{
+			if (first1 == last1) return copy(first2, last2, result);
+			if (first2 == last2) return copy(first1, last1, result);
+			if (comp(*first1, *first2)) { *result = *first1; ++first1; }
+			else if (comp(*first2, *first1)) { *result = *first2; ++first2; }
+			else { *result = *first1; ++first1; ++first2; }
+			++result;
+		}
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter>
+	OutputIter set_intersection(InputIter1 first1, InputIter1 last1,
+								InputIter2 first2, InputIter2 last2, OutputIter result)
+	{
+		typedef typename iterator_traits<InputIter1>::value_type val_t1;
+		typedef typename iterator_traits<InputIter2>::value_type val_t2;
+		return set_intersection(first1, last1, first2, last2, result, less<val_t1, val_t2, bool>());
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter, class Compare>
+	OutputIter set_intersection(InputIter1 first1, InputIter1 last1,
+								InputIter2 first2, InputIter2 last2,
+								OutputIter result, Compare comp)
+	{
+		while (first1 != last1 && first2 != last2)
+		{
+			if (comp(*first1, *first2)) ++first1;
+			else if (comp(*first2, *first1)) ++first2;
+			else 
+			{
+				*result = *first1;
+				++result; ++first1; ++first2;
+			}
+		}
+		return result;
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter>
+	OutputIter set_difference(InputIter1 first1, InputIter1 last1,
+							  InputIter2 first2, InputIter2 last2, OutputIter result)
+	{
+		typedef typename iterator_traits<InputIter1>::value_type val_t1;
+		typedef typename iterator_traits<InputIter2>::value_type val_t2;
+		return set_difference(first1, last1, first2, last2, result, less<val_t1, val_t2, bool>());
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter, class Compare>
+	OutputIter set_difference(InputIter1 first1, InputIter1 last1,
+							  InputIter2 first2, InputIter2 last2,
+							  OutputIter result, Compare comp)
+	{
+		while (first1 != last1 && first2 != last2)
+		{
+			if (comp(*first1, *first2)) { *result = *first1; ++result; ++first1; }
+			else if (comp(*first2, *first1)) ++first2;
+			else { ++first1; ++first2; }
+		}
+		return copy(first1, last1, result);
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter>
+	OutputIter set_symmetric_difference(InputIter1 first1, InputIter1 last1,
+										InputIter2 first2, InputIter2 last2,
+										OutputIter result)
+	{
+		typedef typename iterator_traits<InputIter1>::value_type val_t1;
+		typedef typename iterator_traits<InputIter2>::value_type val_t2;
+		return set_symmetric_difference(first1, last1, first2, last2, result, 
+										less<val_t1, val_t2, bool>());
+	}
+
+	template <class InputIter1, class InputIter2, class OutputIter, class Compare>
+	OutputIter set_symmetric_difference(InputIter1 first1, InputIter1 last1,
+										InputIter2 first2, InputIter2 last2,
+										OutputIter result, Compare comp)
+	{
+		while (true)
+		{
+			if (first1 == last1) return copy(first2, last2, result);
+			if (first2 == last2) return copy(first1, last1, result);
+			if (comp(*first1, *first2)) { *result = *first1; ++result; ++first1; }
+			else if (comp(*first2, *first1)) { *result = *first2; ++result; ++first2; }
+			else { ++first1; ++first2; }
+		}
+	}
+
+	template <class T>
+	const T& min(const T& a, const T& b)
+	{
+		return !(b < a) ? a : b;
+	}
+
+	template <class T>
+	const T& max(const T& a, const T& b)
+	{
+		return a < b ? b : a;
+	}
+
+	template <class T>
+	pair <const T&, const T&>
+	minmax(const T& a, const T& b) 
+	{
+		return (b < a) ? make_pair(b, a) : make_pair(a, b);
+	}
+
+	template <class ForwardIter>
+	ForwardIter min_element(ForwardIter first, ForwardIter last)
+	{
+		typedef typename iterator_traits<ForwardIter>::value_type val_t;
+		return min_element(first, last, less<val_t, val_t, bool>());
+	}
+
+	template <class ForwardIter, class Compare>
+	ForwardIter min_element(ForwardIter first, ForwardIter last, Compare comp)
+	{
+		if (first == last) return last;
+		ForwardIter smallest = first;
+		while (++first != last)
+		{
+			if (comp(*first, *smallest))
+				smallest = first;
+		}
+		return smallest;
+	}
+
+	template <class ForwardIter>
+	ForwardIter max_element(ForwardIter first, ForwardIter last)
+	{
+		typedef typename iterator_traits<ForwardIter>::value_type val_t;
+		return max_element(first, last, less<val_t, val_t, bool>());
+	}
+
+	template <class ForwardIter, class Compare>
+	ForwardIter max_element(ForwardIter first, ForwardIter last, Compare comp)
+	{
+		if (first == last) return last;
+		ForwardIter largest = first;
+		while (++first != last)
+		{
+			if (comp(*largest, *first))
+				largest = first;
+		}
+		return largest;
+	}
+
+	template <class ForwardIter>
+	pair<ForwardIter, ForwardIter>
+	minmax_element(ForwardIter first, ForwardIter last)
+	{
+		typedef typename iterator_traits<ForwardIter>::value_type val_t;
+		return minmax_element(first, last, less<val_t, val_t, bool>());
+	}
+
+	template <class ForwardIter, class Compare>
+	pair<ForwardIter, ForwardIter>
+	minmax_element(ForwardIter first, ForwardIter last, Compare comp)
+	{
+		if (first == last) return last;
+		ForwardIter largest = first;
+		ForwardIter smallest = first;
+		while (++first != last)
+		{
+			if (comp(*first, *smallest))
+				smallest = first;
+			if (*largest < *first)
+				largest = first;
+		}
+		return make_pair(smallest, largest);
+	}
+
+	template <class InputIter1, class InputIter2>
+	bool lexicographical_compare(InputIter1 first1, InputIter1 last1,
+								 InputIter2 first2, InputIter2 last2)
+	{
+		typedef typename iterator_traits<InputIter1>::value_type val_t1;
+		typedef typename iterator_traits<InputIter2>::value_type val_t2;
+		return lexicographical_compare(first1, last1, first2, last2, 
+									   less<val_t1, val_t2, bool>());
+	}
+
+	template <class InputIter1, class InputIter2, class Compare>
+	bool lexicographical_compare(InputIter1 first1, InputIter1 last1,
+								 InputIter2 first2, InputIter2 last2, Compare comp)
+	{
+		while (first1 != last1)
+		{
+			if (first2 == last2 || comp(*first2, *first1))
+				return false;
+			else if (comp(*first1, *first2))
+				return true;
+			++first1; ++first2;
+		}
+		return (first2 != last2);
+	}
+
+	template <class BidirectIter>
+	bool next_permutation(BidirectIter first, BidirectIter last)
+	{
+		typedef typename iterator_traits<BidirectIter>::value_type val_t;
+		return next_permutation(first, last, less<val_t, val_t, bool>());
+	}
+
+	template <class BidirectIter, class Compare>
+	bool next_permutation(BidirectIter first, BidirectIter last, Compare comp)
+	{
+		if (first == last)return false;
+		BidirectIter i = first;
+		++i;
+		if (i == last)return false;
+		i = last;
+		--i;
+		for (;;)
+		{
+			BidirectIter ii = i;
+			--i;
+			if (comp(*i, *ii))// if (*i < *(i+1)) 
+			{
+				BidirectIter j = last;
+				while (!comp(*i, *--j));// find the last j satisfying (*j > *i)
+				iter_swap(i, j);
+				reverse(ii, last);
+				return true;
+			}
+			if (i == first)// inverted order
+			{
+				reverse(first, last);
+				return false;
+			}
+		}
+	}
+
+	template <class BidirectIter>
+	bool prev_permutation(BidirectIter first, BidirectIter last)
+	{
+		typedef typename iterator_traits<BidirectIter>::value_type val_t;
+		return prev_permutation(first, last, less<val_t, val_t, bool>());
+	}
+
+	template <class BidirectIter, class Compare>
+	bool prev_permutation(BidirectIter first, BidirectIter last, Compare comp)
+	{
+		if (first == last)return false;
+		BidirectIter i = first;
+		++i;
+		if (i == last)return false;
+		i = last;
+		--i;
+		for (;;)
+		{
+			BidirectIter ii = i;
+			--i;
+			if (comp(*ii, *i))
+			{
+				BidirectIter j = last;
+				while (!comp(*--j, *i));
+				iter_swap(i, j);
+				reverse(ii, last);
+				return true;
+			}
+			if (i == first)
+			{
+				reverse(first, last);
+				return false;
+			}
+		}
+	}
+
 }
 
 #endif /* TINYSTL_ALGORITHM_H_ */

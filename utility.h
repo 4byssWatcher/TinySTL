@@ -7,11 +7,18 @@
 namespace TinySTL
 {
 	template<class T>
+	remove_reference_t<T>&&
+	move(T&& x)
+	{
+		return static_cast<remove_reference_t<T>&&>(x);
+	}
+
+	template<class T>
 	void swap(T& x, T& y)
 	{
 		T z(move(x));
-		x = move(y);
-		y = move(z);
+		x = std::move(y);
+		y = std::move(z);
 	}
 
 	template<class T, size_t N>
@@ -20,14 +27,7 @@ namespace TinySTL
 		for (size_t i = 0; i < N; ++i)
 			swap(x[i], y[i]);
 	}
-
-	template<class T>
-	typename remove_reference<T>::type&&
-	move(T&& x)
-	{
-		return static_cast<typename remove_reference<decltype(x)>::type>(x);
-	}
-
+	
 	template <class T>
 	T&& forward(typename remove_reference<T>::type& t)
 	{
