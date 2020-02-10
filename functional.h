@@ -21,18 +21,42 @@ namespace TinySTL
         typedef  Result  result_type;
     };
 
-    template<class Arg1, class Arg2, class Result>
-    class equal_to:public binary_function<Arg1, Arg2, Result>
+    template<class Arg>
+    class equal_to
     {
     public:
-        bool operator ()(const Arg1& x, const Arg2& y) { return x == y; }
+        bool operator ()(const Arg& x, const Arg& y) { return x == y; }
     };
 
-    template<class Arg1,class Arg2,class Result>
-    class less :public binary_function<Arg1, Arg2, Result>
+    template<>
+    class equal_to<void>
     {
     public:
-        bool operator()(const Arg1& x, const Arg2& y) { return x < y; }
+        template <class T, class U>
+        auto operator()(T&& x, U&& y)
+        ->decltype(forward<T>(x) == forward<U>(y))
+        {
+            return forward<T>(x) == forward<U>(y);
+        }
+    };
+
+    template <class Arg = void>
+    class less
+    {
+    public:
+        bool operator()(const Arg& x, const Arg& y) { return x < y; }
+    };
+
+    template <>
+    class less<void>
+    {
+    public:
+        template <class T, class U>
+        auto operator()(T&& x, U&& y)
+        ->decltype(forward<T>(x) < forward<U>(y))
+        {
+            return forward<T>(x) < forward<U>(y);
+        }
     };
 
     /* ... */

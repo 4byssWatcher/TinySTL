@@ -130,6 +130,35 @@ namespace TinySTL
     {
         return static_cast<typename iterator_traits<Iterator>::difference_type*>(0);
     }
+
+    /* just for test */
+    template<class InputIter>
+    typename iterator_traits<InputIter>::difference_type
+    distance(InputIter first, InputIter last)
+    {
+        typename iterator_traits<InputIter>::difference_type dis = 0;
+        while (first != last)
+        {
+            ++dis;
+            ++first;
+        }
+        return dis;
+    }
+
+    template<class InputIter, class Distance>
+    void advance(InputIter &first, Distance dis)
+    {
+        if (dis > 0)
+        {
+            while (dis--)
+                ++first;
+        }
+        else
+        {
+            while (dis++)
+                ++first;
+        }
+    }
 }
 
 #endif /* _TINYSTL_ITERATOR_H_ */
