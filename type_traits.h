@@ -4,6 +4,9 @@
 
 namespace TinySTL
 {
+    template <class ...>
+    using void_t = void;
+
     template<class T>
     class remove_reference
     {

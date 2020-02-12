@@ -20,6 +20,12 @@ namespace TinySTL
 		typedef    const T&    const_reference;
 		typedef    ptrdiff_t   difference_type;
 
+		/*
+			*NOT NECESSARY
+			*to judge whether Alloc is a default allocator
+		*/
+		typedef    allocator   _From_primary;
+
 		template <typename U>
 		struct rebind
 		{

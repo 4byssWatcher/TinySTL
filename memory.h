@@ -6,6 +6,7 @@
 #include <functional>
 #include "iterator.h"
 #include "utility.h"
+#include "xmemory.h"
 
 namespace TinySTL
 {
@@ -213,7 +214,7 @@ namespace TinySTL
 	public:
 		using element_type = T;
 		using deleter_type = std::function<void(T*)>;
-		using pointer = T*;
+		using pointer      = T*;
 	private:
 		ref_type<T>*  ref;
 

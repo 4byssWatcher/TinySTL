@@ -3,6 +3,7 @@
 #define _TINYSTL_UTILITY_H_
 
 #include "type_traits.h"
+#include "xutility.h"
 
 namespace TinySTL
 {
