@@ -10,7 +10,7 @@ namespace TinySTL
 	class bidirectional_iterator_tag :public forward_iterator_tag {};
 	class random_access_iterator_tag :public bidirectional_iterator_tag {};
 
-    template<class T,class Distance>
+    template <class T,class Distance>
     class input_iterator
     {
     public:
@@ -21,7 +21,7 @@ namespace TinySTL
         typedef T&                  reference;
     };
 
-    template<class T,class Distance>
+    template <class T,class Distance>
     class output_iterator
     {
     public:
@@ -32,7 +32,7 @@ namespace TinySTL
         typedef void                 reference;
     };
 
-    template<class T,class Distance>
+    template <class T,class Distance>
     class forward_iterator
     {
     public:
@@ -43,7 +43,7 @@ namespace TinySTL
         typedef T&                    reference;
     };
 
-    template<class T,class Distance>
+    template <class T,class Distance>
     class bidirectional_iterator
     {
     public:
@@ -54,7 +54,7 @@ namespace TinySTL
         typedef T&                          reference;
     };
 
-    template<class T,class Distance>
+    template <class T,class Distance>
     class random_access_iterator
     {
     public:
@@ -65,7 +65,10 @@ namespace TinySTL
         typedef T&                          reference;
     };
 
-    template<class Category,class T,class Distance=ptrdiff_t,class Pointer=T*,class Reference=T&>
+    template <class Category, class T, 
+              class Distance = ptrdiff_t, 
+              class Pointer = T*, 
+              class Reference = T&>
     class iterator
     {
     public:
@@ -76,7 +79,7 @@ namespace TinySTL
         typedef Reference reference;
     };
 
-    template<class Iterator>
+    template <class Iterator>
     class iterator_traits
     {
     public:
@@ -87,7 +90,7 @@ namespace TinySTL
         typedef typename Iterator::reference          reference;
     };
 
-    template<class T>
+    template <class T>
     class iterator_traits<T*>
     {
     public:
@@ -98,7 +101,7 @@ namespace TinySTL
         typedef T&                            reference;
     };
 
-    template<class T>
+    template <class T>
     class iterator_traits<const T*>
     {
     public:
@@ -109,7 +112,7 @@ namespace TinySTL
         typedef const T                       reference;
     };
 
-    template<class Iterator>
+    template <class Iterator>
     typename iterator_traits<Iterator>::iterator_category 
     iterator_category(const Iterator&)
     {
@@ -117,22 +120,154 @@ namespace TinySTL
         return category();
     }
 
-    template<class Iterator>
+    template <class Iterator>
     typename iterator_traits<Iterator>::value_type*
     value_type(const Iterator&)
     {
         return static_cast<typename iterator_traits<Iterator>::value_type*>(0);
     }
 
-    template<class Iterator>
+    template <class Iterator>
     typename iterator_traits<Iterator>::difference_type*
     difference_type(const Iterator&)
     {
         return static_cast<typename iterator_traits<Iterator>::difference_type*>(0);
     }
 
-    /* just for test */
-    template<class InputIter>
+    template <class Iterator>
+    class reverse_iterator
+    {
+    protected:
+        Iterator current;
+    public:
+        typedef typename iterator_traits<Iterator>::iterator_category 
+                iterator_category;
+        typedef typename iterator_traits<Iterator>::value_type
+                value_type;
+        typedef typename iterator_traits<Iterator>::difference_type
+                difference_type;
+        typedef typename iterator_traits<Iterator>::pointer 
+                pointer;
+        typedef typename iterator_traits<Iterator>::reference
+                reference;
+
+        typedef Iterator                    iterator_type;
+        typedef reverse_iterator<Iterator>  Self;
+
+    public:
+        reverse_iterator() {}
+        explicit reverse_iterator(iterator_type x) :current(x) {}
+        reverse_iterator(const Self& x) :current(x.current) {}
+        
+        template <class Iter>
+        reverse_iterator(const reverse_iterator<Iter>& x) : current(x.base()) {}
+
+        iterator_type base() const { return current; }
+
+        /* reverse(first) -> end-1  ,  reverse(end-1) -> first */
+        reference operator*()const
+        {
+            Iterator tmp = current;
+            return *--tmp;
+        }
+
+        pointer operator->()const { return &(operator*()); }
+
+        Self& operator++() // prefix
+        {
+            --current;
+            return *this;
+        }
+        Self& operator++(int) // suffix
+        {
+            Self tmp = *this;
+            --current;
+            return tmp;
+        }
+        Self& operator--()
+        {
+            ++current;
+            return *this;
+        }
+        Self& operator--(int)
+        {
+            Self tmp = *this;
+            ++current;
+            return tmp;
+        }
+        Self operator+(difference_type n) const 
+        {
+            return Self(current - n);
+        }
+        Self& operator+=(difference_type n)
+        {
+            current -= n;
+            return *this;
+        }
+        Self operator-(difference_type n) const
+        {
+            return Self(current + n);
+        }
+        Self& operator-=(difference_type n)
+        {
+            current += n;
+            return *this;
+        }
+        reference operator[](difference_type n) const { return *(*this + n); }
+    };
+
+    template <class Iterator>
+    inline bool operator==(const reverse_iterator<Iterator>& x,
+                           const reverse_iterator<Iterator>& y)
+    {
+        return x.base() == y.base();
+    }
+
+    template <class Iterator>
+    inline bool operator<(const reverse_iterator<Iterator>& x,
+                          const reverse_iterator<Iterator>& y)
+    {
+        return y.base() < x.base();
+    }
+
+    template <class Iterator>
+    inline bool operator!=(const reverse_iterator<Iterator>& x,
+                           const reverse_iterator<Iterator>& y) 
+    {
+        return !(x == y);
+    }
+
+    template <class Iterator>
+    inline bool operator>(const reverse_iterator<Iterator>& x,
+                          const reverse_iterator<Iterator>& y)
+    {
+        return y < x;
+    }
+
+    template <class Iterator>
+    inline bool operator<=(const reverse_iterator<Iterator>& x,
+                           const reverse_iterator<Iterator>& y)
+    {
+        return !(y < x);
+    }
+
+    template <class Iterator>
+    inline bool operator>=(const reverse_iterator<Iterator>& x,
+                           const reverse_iterator<Iterator>& y)
+    {
+        return !(x < y);
+    }
+
+    template <class Iterator>
+    inline typename reverse_iterator<Iterator>::difference_type
+    operator-(const reverse_iterator<Iterator>& x,
+              const reverse_iterator<Iterator>& y)
+    {
+        return y.base() - x.base();
+    }
+
+    /* just for test, NOT completed, pending modification */
+    template <class InputIter>
     typename iterator_traits<InputIter>::difference_type
     distance(InputIter first, InputIter last)
     {
@@ -145,7 +280,7 @@ namespace TinySTL
         return dis;
     }
 
-    template<class InputIter, class Distance>
+    template <class InputIter, class Distance>
     void advance(InputIter &first, Distance dis)
     {
         if (dis > 0)

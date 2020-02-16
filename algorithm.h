@@ -77,6 +77,10 @@ namespace TinySTL
 		return move(func);
 	}
 
+	/* 
+		SGI-STL has another implementation of find()/find_...() 
+			for random-access iterator, not sure why
+	*/
 	template <class InputIter, class T>
 	InputIter find(InputIter first, InputIter last, const T& val)
 	{
@@ -738,8 +742,8 @@ namespace TinySTL
 	}
 
 	template <class ForwardIter, class UnaryPredicate>
-	ForwardIter partition(ForwardIter first, ForwardIter last,
-						  UnaryPredicate pred, forward_iterator_tag)
+	ForwardIter _partition(ForwardIter first, ForwardIter last,
+						   UnaryPredicate pred, forward_iterator_tag)
 	{
 		if (first == last)return first;
 		while (pred(*first))
@@ -760,8 +764,8 @@ namespace TinySTL
 	}
 
 	template <class BidirectIter, class UnaryPredicate>
-	BidirectIter partition(BidirectIter first, BidirectIter last,
-						   UnaryPredicate pred, bidirectional_iterator_tag)
+	BidirectIter _partition(BidirectIter first, BidirectIter last,
+						    UnaryPredicate pred, bidirectional_iterator_tag)
 	{
 		while (first != last)
 		{
@@ -779,6 +783,12 @@ namespace TinySTL
 			++first;
 		}
 		return first;
+	}
+
+	template <class Iterator, class Predicate>
+	Iterator partition(Iterator first, Iterator last, Predicate pred)
+	{
+		return _partition(first, last, pred, iterator_category(first));
 	}
 
 	template <class ForwardIter, class UnaryPredicate, class Distance>

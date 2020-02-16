@@ -2,22 +2,24 @@
 #ifndef _TINYSTL_MEMORY_H_
 #define _TINYSTL_MEMORY_H_
 
-#include <cstddef>
-#include <functional>
+#include <cstddef>//std::true_type
+#include <functional>//std::function
+#include <type_traits>//std::is_trivial
+#include "algorithm.h"
 #include "iterator.h"
 #include "utility.h"
 #include "xmemory.h"
 
 namespace TinySTL
 {
-	template<class T>
+	template <class T>
 	class default_deleter
 	{
 	public:
 		void operator ()(T* ptr) { if (ptr)delete ptr; }
 	};
 	/* for array */
-	template<class T>
+	template <class T>
 	class default_deleter<T[]>
 	{
 	public:
@@ -25,7 +27,7 @@ namespace TinySTL
 	};
 
 	/* pending modification for EBO */
-	template<class T, class D = default_deleter<T> >
+	template <class T, class D = default_deleter<T> >
 	class unique_ptr
 	{
 	public:
@@ -176,13 +178,13 @@ namespace TinySTL
 		return unique_ptr<T>(new T(forward<Targs>(args)...));
 	}
 
-	template<class T>
+	template <class T>
 	void _default_deleter(T* _data)
 	{
 		if (_data)delete _data;
 	}
 
-	template<class T>
+	template <class T>
 	class ref_type
 	{
 	public:
@@ -208,7 +210,7 @@ namespace TinySTL
 	};
 
 
-	template<class T>
+	template <class T>
 	class shared_ptr
 	{
 	public:
@@ -335,10 +337,132 @@ namespace TinySTL
 		return lhs.get() >= rhs.get();
 	}
 
-	template<class T,class...Targs>
-	shared_ptr<T>make_shared(Targs&&...args)
+	template <class T,class...Targs>
+	shared_ptr<T> make_shared(Targs&&...args)
 	{
 		return shared_ptr<class T>(new T(forward<Targs>((args)...)));
+	}
+
+	/* reinterpret_cast<T&>(x) == reinterpret_cast<T>(&x) */
+	template <class T>
+	inline T* addressof(T& ref)
+	{
+		return reinterpret_cast<T*>
+					(&const_cast<char&>
+							(reinterpret_cast<const volatile char&>(ref)));
+	}
+
+	template <class InputIter, class ForwardIter>
+	ForwardIter uninitialized_copy(InputIter first, InputIter last, 
+								   ForwardIter result)
+	{
+		_uninitialized_copy(first, last, result, std::is_trivial<InputIter>());
+	}
+
+	template <class InputIter, class ForwardIter>
+	ForwardIter _uninitialized_copy(InputIter first, InputIter last,
+								    ForwardIter result, std::true_type)
+	{
+		return copy(first, last, result);
+	}
+
+	template <class InputIter, class ForwardIter>
+	ForwardIter _uninitialized_copy(InputIter first, InputIter last,
+									ForwardIter result, std::false_type)
+	{
+		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		ForwardIter current = first;
+		try 
+		{
+			for (; first != last; ++first, ++current)
+			{
+				::new (static_cast<void*>(addressof(*current))) Value(*first);
+			}
+			return current;
+		}
+		catch (...) //commit or rollback
+		{
+			for (; result != current; ++result) 
+			{
+				result->~Value();
+			}
+			throw;
+		}
+	}
+
+	template <class ForwardIter, class T>
+	ForwardIter uninitialized_fill(ForwardIter first, ForwardIter last,
+								   const T& val)
+	{
+		_uninitialized_fill(first, last, val, std::is_trivial<ForwardIter>());
+	}
+
+	template <class ForwardIter, class T>
+	ForwardIter _uninitialized_fill(ForwardIter first, ForwardIter last,
+								    const T& val, std::true_type)
+	{
+		return fill(first, last, val);
+	}
+
+	template <class ForwardIter, class T>
+	ForwardIter _uninitialized_fill(ForwardIter first, ForwardIter last,
+									const T& val, std::false_type)
+	{
+		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		ForwardIter current = first;
+		try
+		{
+			for (; current != last; ++current)
+			{
+				::new (static_cast<void*>(addressof(*current))) Value(val);
+			}
+			return current;
+		}
+		catch (...) //commit or rollback
+		{
+			for (; first != current; ++first)
+			{
+				first->~Value();
+			}
+			throw;
+		}
+	}
+
+	template <class ForwardIter, class Size, class T>
+	ForwardIter uninitialized_fill_n(ForwardIter first, Size n, const T& val)
+	{
+		_uninitialized_fill_n(first, n, val, std::is_trivial<ForwardIter>());
+	}
+
+	template <class ForwardIter, class Size, class T>
+	ForwardIter _uninitialized_fill_n(ForwardIter first, Size n,
+									  const T& val, std::true_type)
+	{
+		return fill_n(first, n, val);
+	}
+
+	template <class ForwardIter, class Size, class T>
+	ForwardIter _uninitialized_fill_n(ForwardIter first, Size n,
+									  const T& val, std::false_type)
+	{
+		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		ForwardIter current = first;
+		try
+		{
+			for (; n>0; --n, ++current)
+			{
+				::new (static_cast<void*>(addressof(*current))) Value(val);
+			}
+			return current;
+		}
+		catch (...) //commit or rollback
+		{
+			for (; first != current; ++first)
+			{
+				first->~Value();
+			}
+			throw;
+		}
 	}
 
 }

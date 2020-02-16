@@ -5,7 +5,7 @@
 #include <cstddef>
 #include "type_traits.h"
 
-/* pointer_traits */
+/* pointer_traits and some type judgement */
 
 namespace TinySTL
 {
