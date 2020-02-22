@@ -416,7 +416,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template <class InputIter, class Size, class OutputIter>
+	template <class InputIter, class OutputIter>
 	OutputIter move(InputIter first, InputIter last, OutputIter result)
 	{
 		while (first != last)
@@ -529,7 +529,7 @@ namespace TinySTL
 	}
 
 	template <class ForwardIter, class Size, class T>
-	ForwardIter fill_n(ForwardIter first, ForwardIter last, Size n, const T& val)
+	ForwardIter fill_n(ForwardIter first, Size n, const T& val)
 	{
 		while (n > 0)
 		{
@@ -931,7 +931,7 @@ namespace TinySTL
 			RandomIter cut = unguarded_partition(first, last, 
 												 median(*first,
 														*(first + (last - first) / 2),
-														*(last - 1), comp));
+														*(last - 1)), comp);
 			introsort(cut, last, depth_limit, comp);
 			last = cut;
 		}
@@ -1066,7 +1066,10 @@ namespace TinySTL
 	void partial_sort(RandomIter first, RandomIter mid, 
 					  RandomIter last, Compare comp)
 	{
-		heap_select(first, mid, last, comp);
+		make_heap(first, mid, comp);
+		for (RandomIter i = mid; i != last; ++i)
+			if (comp(*i, *first))
+				_pop_heap(first, mid, i, *i, comp);
 		sort_heap(first, mid, comp);
 	}
 
@@ -1161,7 +1164,7 @@ namespace TinySTL
 			RandomIter cut = unguarded_partition(first, last,
 												 median(*first,
 														*(first + (last - first) / 2),
-														*(last-1), comp));
+														*(last-1)), comp);
 			if (cut <= nth)first = cut;
 			else last = cut;
 		}

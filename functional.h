@@ -2,6 +2,8 @@
 #ifndef _TINYSTL_FUNCTIONAL_H_
 #define _TINYSTL_FUNCTIONAL_H_
 
+#include "utility.h"
+
 namespace TinySTL
 {
     template <class Arg, class Result>

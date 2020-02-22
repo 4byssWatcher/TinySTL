@@ -54,6 +54,15 @@ namespace TinySTL
 		_push_heap(first, now, next_limit, val, comp);
 	}
 
+	template <class RandomIter, class Compare, class T>
+	void _pop_heap(RandomIter first, RandomIter last,
+				   RandomIter result, T val, Compare comp)
+	{
+		typedef typename iterator_traits<RandomIter>::difference_type Distance;
+		*result = *first;
+		_adjust_heap(first, Distance(0), Distance(last - first), val, comp);
+	}
+
 	template <class RandomIter>
 	void pop_heap(RandomIter first, RandomIter last)
 	{
@@ -83,7 +92,7 @@ namespace TinySTL
 		auto parent = (limit - 2) / 2;
 		for (;;)
 		{
-			_adjust_heap(first, parent, limit, *(first + parent));
+			_adjust_heap(first, parent, limit, *(first + parent), comp);
 			if (parent == 0)return;
 			--parent;
 		}

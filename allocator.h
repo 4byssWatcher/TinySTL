@@ -59,10 +59,6 @@ namespace TinySTL
 		{
 			return size_type(UINT_MAX/sizeof(T));
 		}
-		static void construct(pointer p, const T& value)
-		{
-			new(p) T(value);
-		}
 		static void destroy(pointer p)
 		{
 			p->~T();
