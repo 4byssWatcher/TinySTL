@@ -10,17 +10,17 @@ namespace TinySTL
     class unary_function
     {
     public:
-        typedef  Arg     argument_type;
-        typedef  Result  result_type;
+        using argument_type = Arg;
+        using result_type   = Result;
     };
 
     template <class Arg1, class Arg2, class Result>
     class binary_function
     {
     public:
-        typedef  Arg1    first_argument_type;
-        typedef  Arg2    second_argument_type;
-        typedef  Result  result_type;
+        using first_argument_type  = Arg1;
+        using second_argument_type = Arg2;
+        using result_type          = Result;
     };
 
     template<class Arg>

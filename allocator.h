@@ -12,24 +12,24 @@ namespace TinySTL
 	class allocator
 	{
 	public:
-		typedef    T           value_type;
-		typedef    T*          pointer;
-		typedef    T&          reference;
-		typedef    size_t      size_type;
-		typedef    const T*    const_pointer;
-		typedef    const T&    const_reference;
-		typedef    ptrdiff_t   difference_type;
+		using value_type      = T;
+		using pointer         = T*;
+		using reference       = T&;
+		using size_type       = size_t;
+		using const_pointer   = const T*;
+		using const_reference = const T&;
+		using difference_type = ptrdiff_t;
 
 		/*
 			*NOT NECESSARY
 			*to judge whether Alloc is a default allocator
 		*/
-		typedef    allocator   _From_primary;
+		using _From_primary   = allocator;
 
 		template <typename U>
 		struct rebind
 		{
-			typedef allocator<U> other;
+			using other = allocator<U>;
 		};
 		static pointer allocate()
 		{
@@ -70,6 +70,18 @@ namespace TinySTL
 		}
 
 	};
+
+	template <class T>
+	bool operator ==(const allocator<T>& x, const allocator<T>& y)
+	{
+		return true;
+	}
+
+	template <class T>
+	bool operator !=(const allocator<T>& x, const allocator<T>& y)
+	{
+		return false;
+	}
 
 	template <typename T, class Alloc>
 	class simple_alloc

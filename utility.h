@@ -45,8 +45,8 @@ namespace TinySTL
 	class pair
 	{
 	public:
-		typedef T1 first_type;
-		typedef T2 second_type;
+		using first_type  = T1;
+		using second_type = T2;
 	public:
 		T1 first;
 		T2 second;

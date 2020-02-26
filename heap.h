@@ -28,7 +28,7 @@ namespace TinySTL
 	template <class RandomIter, class Compare>
 	void push_heap(RandomIter first, RandomIter last, Compare comp)
 	{
-		typedef typename iterator_traits<RandomIter>::difference_type Distance;
+		using Distance = typename iterator_traits<RandomIter>::difference_type;
 		_push_heap(first, last, Distance(last - first - 1), Distance(0), *(last - 1), comp);
 	}
 
@@ -58,7 +58,7 @@ namespace TinySTL
 	void _pop_heap(RandomIter first, RandomIter last,
 				   RandomIter result, T val, Compare comp)
 	{
-		typedef typename iterator_traits<RandomIter>::difference_type Distance;
+		using Distance = typename iterator_traits<RandomIter>::difference_type;
 		*result = *first;
 		_adjust_heap(first, Distance(0), Distance(last - first), val, comp);
 	}
@@ -72,7 +72,7 @@ namespace TinySTL
 	template <class RandomIter, class Compare>
 	void pop_heap(RandomIter first, RandomIter last, Compare comp)
 	{
-		typedef typename iterator_traits<RandomIter>::difference_type Distance;
+		using Distance = typename iterator_traits<RandomIter>::difference_type;
 		auto val = *--last;
 		*last = *first;
 		_adjust_heap(first, Distance(0), Distance(last - first), val, comp);

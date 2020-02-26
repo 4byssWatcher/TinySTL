@@ -13,7 +13,7 @@ namespace TinySTL
     class enable_if {};
 
     template <class T>
-    class enable_if<true, T> { typedef T type; };
+    class enable_if<true, T> { using type = T; };
 
     template <bool B, class T = void>
     using enable_if_t = typename enable_if<B, T>::type;
@@ -22,21 +22,21 @@ namespace TinySTL
     class remove_reference
     {
     public:
-        typedef T type;
+        using type = T;
     };
 
     template<class T>
     class remove_reference<T&>
     {
     public:
-        typedef T type;
+        using type = T;
     };
 
     template<class T>
     class remove_reference<T&&>
     {
     public:
-        typedef T type;
+        using type = T;
     };
 
     template <class T>

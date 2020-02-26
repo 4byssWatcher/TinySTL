@@ -14,55 +14,55 @@ namespace TinySTL
     class input_iterator
     {
     public:
-        typedef input_iterator_tag  iterator_category;
-        typedef T                   value_type;
-        typedef Distance            difference_type;
-        typedef T*                  pointer;
-        typedef T&                  reference;
+        using iterator_category = input_iterator_tag;
+        using value_type        = T;
+        using difference_type   = Distance;
+        using pointer           = T*;
+        using reference         = T&;
     };
 
     template <class T,class Distance>
     class output_iterator
     {
     public:
-        typedef output_iterator_tag  iterator_category;
-        typedef void                 value_type;
-        typedef void                 difference_type;
-        typedef void                 pointer;
-        typedef void                 reference;
+        using iterator_category = output_iterator_tag;
+        using value_type        = void;
+        using difference_type   = void;
+        using pointer           = void;
+        using reference         = void;
     };
 
     template <class T,class Distance>
     class forward_iterator
     {
     public:
-        typedef forward_iterator_tag  iterator_category;
-        typedef T                     value_type;
-        typedef Distance              difference_type;
-        typedef T*                    pointer;
-        typedef T&                    reference;
+        using iterator_category = forward_iterator_tag;
+        using value_type        = T;
+        using difference_type   = Distance;
+        using pointer           = T*;
+        using reference         = T&;
     };
 
     template <class T,class Distance>
     class bidirectional_iterator
     {
     public:
-        typedef bidirectional_iterator_tag  iterator_category;
-        typedef T                           value_type;
-        typedef Distance                    difference_type;
-        typedef T*                          pointer;
-        typedef T&                          reference;
+        using iterator_category = bidirectional_iterator_tag;
+        using value_type        = T;
+        using difference_type   = Distance;
+        using pointer           = T*;
+        using reference         = T&;
     };
 
     template <class T,class Distance>
     class random_access_iterator
     {
     public:
-        typedef random_access_iterator_tag  iterator_category;
-        typedef T                           value_type;
-        typedef Distance                    difference_type;
-        typedef T*                          pointer;
-        typedef T&                          reference;
+        using iterator_category = random_access_iterator_tag;
+        using value_type        = T;
+        using difference_type   = Distance;
+        using pointer           = T*;
+        using reference         = T&;
     };
 
     template <class Category, class T, 
@@ -72,51 +72,51 @@ namespace TinySTL
     class iterator
     {
     public:
-        typedef Category  iterator_category;
-        typedef T         value_type;
-        typedef Distance  difference_type;
-        typedef Pointer   pointer;
-        typedef Reference reference;
+        using iterator_category = Category;
+        using value_type        = T;
+        using difference_type   = Distance;
+        using pointer           = Pointer;
+        using reference         = Reference;
     };
 
     template <class Iterator>
     class iterator_traits
     {
     public:
-        typedef typename Iterator::iterator_category  iterator_category;
-        typedef typename Iterator::value_type         value_type;
-        typedef typename Iterator::difference_type    difference_type;
-        typedef typename Iterator::pointer            pointer;
-        typedef typename Iterator::reference          reference;
+        using iterator_category = typename Iterator::iterator_category;
+        using value_type        = typename Iterator::value_type;
+        using difference_type   = typename Iterator::difference_type;
+        using pointer           = typename Iterator::pointer;
+        using reference         = typename Iterator::reference;
     };
 
     template <class T>
     class iterator_traits<T*>
     {
     public:
-        typedef random_access_iterator_tag    iterator_category;
-        typedef T                             value_type;
-        typedef ptrdiff_t                     difference_type;
-        typedef T*                            pointer;
-        typedef T&                            reference;
+        using iterator_category = random_access_iterator_tag;
+        using value_type        = T;
+        using difference_type   = ptrdiff_t;
+        using pointer           = T*;
+        using reference         = T&;
     };
 
     template <class T>
     class iterator_traits<const T*>
     {
     public:
-        typedef random_access_iterator_tag    iterator_category;
-        typedef T                             value_type;
-        typedef ptrdiff_t                     difference_type;
-        typedef const T*                      pointer;
-        typedef const T                       reference;
+        using iterator_category = random_access_iterator_tag;
+        using value_type        = T;
+        using difference_type   = ptrdiff_t;
+        using pointer           = const T*;
+        using reference         = const T;
     };
 
     template <class Iterator>
     typename iterator_traits<Iterator>::iterator_category 
     iterator_category(const Iterator&)
     {
-        typedef typename iterator_traits<Iterator>::iterator_category category;
+        using category = typename iterator_traits<Iterator>::iterator_category;
         return category();
     }
 
@@ -140,19 +140,19 @@ namespace TinySTL
     protected:
         Iterator current;
     public:
-        typedef typename iterator_traits<Iterator>::iterator_category 
-                iterator_category;
-        typedef typename iterator_traits<Iterator>::value_type
-                value_type;
-        typedef typename iterator_traits<Iterator>::difference_type
-                difference_type;
-        typedef typename iterator_traits<Iterator>::pointer 
-                pointer;
-        typedef typename iterator_traits<Iterator>::reference
-                reference;
+        using iterator_category =
+            typename iterator_traits<Iterator>::iterator_category;
+        using value_type        =
+            typename iterator_traits<Iterator>::value_type;
+        using difference_type   =
+            typename iterator_traits<Iterator>::difference_type;
+        using pointer           =
+            typename iterator_traits<Iterator>::pointer;
+        using reference         =
+            typename iterator_traits<Iterator>::reference;
 
-        typedef Iterator                    iterator_type;
-        typedef reverse_iterator<Iterator>  Self;
+        using iterator_type = Iterator;
+        using Self          = reverse_iterator<Iterator>;
 
     public:
         reverse_iterator() {}

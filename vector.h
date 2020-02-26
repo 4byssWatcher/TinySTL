@@ -14,20 +14,20 @@ namespace TinySTL
 	class vector
 	{
 	private:
-		typedef allocator_traits<Alloc>                alloc_traits;
+		using alloc_traits           = allocator_traits<Alloc>;
 	public:
-		typedef T                                      value_type;
-		typedef Alloc                                  allocator_type;
-		typedef size_t                                 size_type;
-		typedef ptrdiff_t                              difference_type;
-		typedef T&                                     reference;
-		typedef const T&                               const_reference;
-		typedef typename alloc_traits::pointer         pointer;
-		typedef typename alloc_traits::const_pointer   const_pointer;
-		typedef T*                                     iterator;
-		typedef const T*                               const_iterator;
-		typedef reverse_iterator<const_iterator>	   const_reverse_iterator;
-		typedef reverse_iterator<iterator>		  	   reverse_iterator;
+		using value_type             = T;
+		using allocator_type         = Alloc;
+		using size_type              = size_t;
+		using difference_type        = ptrdiff_t;
+		using reference              = T&;
+		using const_reference        = const T&;
+		using pointer                = typename alloc_traits::pointer;
+		using const_pointer          = typename alloc_traits::const_pointer;
+		using iterator               = T*;
+		using const_iterator         = const T*;
+		using const_reverse_iterator = reverse_iterator<const_iterator>;
+		using reverse_iterator       = reverse_iterator<iterator>;
 	
 	protected:
 		iterator        start;

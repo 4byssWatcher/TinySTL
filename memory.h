@@ -31,9 +31,9 @@ namespace TinySTL
 	class unique_ptr
 	{
 	public:
-		typedef  T    element_type;
-		typedef  D    deleter_type;
-		typedef  T*   pointer;
+		using element_type = T;
+		using deleter_type = D;
+		using pointer      = T*;
 	private:
 		pointer       data;
 		deleter_type  deleter;
@@ -371,7 +371,7 @@ namespace TinySTL
 	ForwardIter _uninitialized_copy(InputIter first, InputIter last, ForwardIter result,
 									std::false_type, Alloc& alloc)
 	{
-		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = first;
 		try 
 		{
@@ -411,7 +411,7 @@ namespace TinySTL
 	ForwardIter _uninitialized_fill(ForwardIter first, ForwardIter last,
 									const T& val, std::false_type, Alloc& alloc)
 	{
-		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = first;
 		try
 		{
@@ -451,7 +451,7 @@ namespace TinySTL
 	ForwardIter _uninitialized_fill_n(ForwardIter first, Size n, const T& val,
 									  std::false_type, Alloc& alloc)
 	{
-		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = first;
 		try
 		{
@@ -491,7 +491,7 @@ namespace TinySTL
 	ForwardIter _uninitialized_move(InputIter first, InputIter last, ForwardIter result,
 									std::false_type, Alloc& alloc)
 	{
-		typedef typename iterator_traits<ForwardIter>::value_type Value;
+		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = first;
 		try
 		{
