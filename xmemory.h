@@ -11,19 +11,19 @@
 namespace TinySTL
 {
 	template <class T, class = void>
-	class _get_pointer_type
+	struct _get_pointer_type
 	{
 		using type = typename T::value_type*;
 	};
 
 	template <class T>
-	class _get_pointer_type<T, void_t<typename T::pointer>>
+	struct _get_pointer_type<T, void_t<typename T::pointer>>
 	{
 		using type = typename T::pointer;
 	};
 
 	template <class T, class = void>
-	class _get_const_pointer_type
+	struct _get_const_pointer_type
 	{
 		using ptr_t = typename _get_pointer_type<T>::type;
 		using val_t = typename T::value_type;
@@ -31,7 +31,7 @@ namespace TinySTL
 	};
 
 	template <class T>
-	class _get_const_pointer_type<T, void_t<typename T::const_pointer>>
+	struct _get_const_pointer_type<T, void_t<typename T::const_pointer>>
 	{
 		using type = typename T::const_pointer;
 	};
@@ -201,7 +201,7 @@ namespace TinySTL
 		template <class T, class... Args>
 		static void construct(allocator_type alloc, T* ptr, Args&&... args)
 		{
-			if constexpr(_has_allocator_construct<alloc, ptr, args>::value)
+			if constexpr(_has_allocator_construct<allocator_type, T*, Args...>::value)
 				alloc.construct(ptr, forward<Args>(args)...);
 			else ::new(static_cast<void*>(ptr)) T(forward<Args>(args)...);
 		}
@@ -212,6 +212,18 @@ namespace TinySTL
 			if constexpr(_has_allocator_destroy<alloc, ptr>::value)
 				alloc.destroy(ptr);
 			else ptr->~T();
+		}
+
+		template <class T>
+		static void destroy(Alloc& alloc, T* first, T* last)
+		{
+			if constexpr (_has_allocator_destroy<Alloc, T*, T*>::value)
+				alloc.destroy(first, last);
+			else
+			{
+				for (; first != last; ++first)
+					first->~T();
+			}
 		}
 
 		static size_type max_size(const Alloc& alloc) noexcept

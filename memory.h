@@ -357,7 +357,7 @@ namespace TinySTL
 	ForwardIter uninitialized_copy(InputIter first, InputIter last,
 								   ForwardIter result, Alloc& alloc = Alloc())
 	{
-		_uninitialized_copy(first, last, result, std::is_trivial<InputIter>(), alloc);
+		return _uninitialized_copy(first, last, result, std::is_trivial<InputIter>(), alloc);
 	}
 
 	template <class InputIter, class ForwardIter, class Alloc>
@@ -372,13 +372,13 @@ namespace TinySTL
 									std::false_type, Alloc& alloc)
 	{
 		using Value = typename iterator_traits<ForwardIter>::value_type;
-		ForwardIter current = first;
+		ForwardIter current = result;
 		try 
 		{
 			for (; first != last; ++first, ++current)
 			{
-				allocator_traits<Alloc>::construct(static_cast<void*>(addressof(*current)),
-												   Value(*first));
+				allocator_traits<Alloc>::construct(alloc,
+					static_cast<void*>(addressof(*current)), Value(*first));
 			}
 			return current;
 		}
@@ -386,7 +386,7 @@ namespace TinySTL
 		{
 			for (; result != current; ++result) 
 			{
-				allocator_traits<Alloc>::destroy(result);
+				allocator_traits<Alloc>::destroy(alloc, result);
 			}
 			throw;
 		}
@@ -417,8 +417,8 @@ namespace TinySTL
 		{
 			for (; current != last; ++current)
 			{
-				allocator_traits<Alloc>::construct(static_cast<void*>(addressof(*current)),
-												   Value(val));
+				allocator_traits<Alloc>::construct(alloc,
+					static_cast<void*>(addressof(*current)), Value(val));
 			}
 			return current;
 		}
@@ -426,7 +426,7 @@ namespace TinySTL
 		{
 			for (; first != current; ++first)
 			{
-				allocator_traits<Alloc>::destroy(first);
+				allocator_traits<Alloc>::destroy(alloc, first);
 			}
 			throw;
 		}
@@ -457,8 +457,8 @@ namespace TinySTL
 		{
 			for (; n>0; --n, ++current)
 			{
-				allocator_traits<Alloc>::construct(static_cast<void*>(addressof(*current)),
-												   Value(val));
+				allocator_traits<Alloc>::construct(alloc,
+					static_cast<void*>(addressof(*current)), Value(val));
 			}
 			return current;
 		}
@@ -466,7 +466,7 @@ namespace TinySTL
 		{
 			for (; first != current; ++first)
 			{
-				allocator_traits<Alloc>::destroy(first);
+				allocator_traits<Alloc>::destroy(alloc, first);
 			}
 			throw;
 		}
@@ -497,8 +497,8 @@ namespace TinySTL
 		{
 			for (; first != last; ++first, ++current)
 			{
-				allocator_traits<Alloc>::construct(static_cast<void*>(addressof(*current)),
-												   Value(move(*first)));
+				allocator_traits<Alloc>::construct(alloc,
+					static_cast<void*>(addressof(*current)), Value(move(*first)));
 			}
 			return current;
 		}
@@ -506,7 +506,7 @@ namespace TinySTL
 		{
 			for (; result != current; ++result)
 			{
-				allocator_traits<Alloc>::destroy(result);
+				allocator_traits<Alloc>::destroy(alloc,result);
 			}
 			throw;
 		}

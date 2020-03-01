@@ -7,11 +7,11 @@
 #include "allocator.h"
 #include "memory.h"
 
-using max_align_t = double;
-using byte        = char;
-
 namespace TinySTL
 {
+	using max_align_t = double;
+	using byte = char;
+
 	class memory_resource
 	{
 		static constexpr size_t max_align = alignof(max_align_t);
@@ -102,7 +102,7 @@ namespace TinySTL
 		typename allocator_traits<Allocator>::template rebind_alloc<byte> >;
 
 	/* NOT in standard, just want to use allocator.h */
-	using default_allocator_resource = resource_adaptor<allocator<byte>>;
+	using default_allocator_resource = resource_adaptor<allocator<byte> >;
 
 	/* 
 		to avoid duplicate definition

@@ -28,7 +28,7 @@ namespace TinySTL
     };
 
     template <class T, class = void>
-    class _get_element_type 
+    struct _get_element_type 
     {
         using type = typename _get_first_parameter<T>::type;
     };
@@ -40,7 +40,7 @@ namespace TinySTL
     };
 
     template <class T, class = void>
-    class _get_ptr_difference_type
+    struct _get_ptr_difference_type
     {
         using type = ptrdiff_t;
     };
@@ -64,7 +64,7 @@ namespace TinySTL
     };
 
 	template <class T>
-	class pointer_traits
+	struct pointer_traits
 	{
         using pointer         =  T;
         using element_type    =  typename _get_element_type<T>::type;
@@ -80,7 +80,7 @@ namespace TinySTL
 	};
 
     template <class T>
-    class pointer_traits<T*>
+    struct pointer_traits<T*>
     {
         using pointer         =  T*;
         using element_type    =  T;

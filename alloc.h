@@ -11,12 +11,12 @@
 
 #include "string.h"
 
-enum { ALIGN = 8 };
-enum { MAX_BYTES = 128 };
-enum { NFREELISTS = (MAX_BYTES / ALIGN) };
-
 namespace TinySTL
 {
+    enum { ALIGN = 8 };
+    enum { MAX_BYTES = 128 };
+    enum { NFREELISTS = (MAX_BYTES / ALIGN) };
+
     class malloc_alloc_template
     {
     private:

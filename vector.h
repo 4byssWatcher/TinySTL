@@ -8,9 +8,11 @@
 #include "memory.h"
 #include "type_traits.h"
 
+#include <initializer_list> // std::initializer_list
+
 namespace TinySTL
 {
-	template <class T, class Alloc =  allocator<T>>
+	template <class T, class Alloc =  polymorphic_allocator<T> >
 	class vector
 	{
 	private:
@@ -36,21 +38,14 @@ namespace TinySTL
 		allocator_type  data_allocator;
 
 	public:
-		vector() noexcept(noexcept(Alloc()))
-			:start(0), finish(0), end_of_storage(0) {}
+		explicit vector(const allocator_type& alloc = Alloc()) noexcept
+			:start(0), finish(0), end_of_storage(0), data_allocator(alloc) {}
 
-		explicit vector(const allocator_type& alloc) noexcept
-			:start(0), finish(0), end_of_storage(0) {}
-
-		vector(size_type n, const value_type& val,
-			   const allocator_type& alloc = allocator_type())
+		explicit vector(size_type n, const value_type& val = T(),
+						const allocator_type& alloc = allocator_type())
+			:data_allocator(alloc)
 		{
-			_alloc_and_init_n(n, val);
-		}
-
-		explicit vector(size_type n, const allocator_type& alloc = allocator_type())
-		{
-			_alloc_and_init_n(n, T());
+			_alloc_n_and_init(n, val);
 		}
 
 		/* 
@@ -61,29 +56,35 @@ namespace TinySTL
 		template <class InputIter, class = enable_if_t<_is_iterator_v<InputIter> > >
 		vector(InputIter first, InputIter last,
 			   const allocator_type& alloc = allocator_type())
+			:data_allocator(alloc)
 		{
 			_range_init(first, last);
 		}
 
 		vector(const vector& other)
+			:data_allocator(other.get_allocator())
 		{
 			_range_init(other.begin(), other.end());
 		}
 
 		vector(const vector& other, const Alloc& alloc)
+			:data_allocator(alloc)
 		{
 			_range_init(other.begin(), other.end());
 		}
 
 		vector(vector&& other) noexcept
 			:start(other.start), finish(other.finish),
-			 end_of_storage(other.end_of_storage) {}
+			 end_of_storage(other.end_of_storage),
+			 data_allocator(other.get_allocator()) {}
 
 		vector(vector&& other, const Alloc& alloc)
 			:start(other.start), finish(other.finish),
-			 end_of_storage(other.end_of_storage) {}
+			 end_of_storage(other.end_of_storage),
+			 data_allocator(alloc) {}
 
 		vector(std::initializer_list<T> ilist, const Alloc& alloc = Alloc())
+			:data_allocator(alloc)
 		{
 			_range_init(ilist.begin(), ilist.end());
 		}
@@ -127,7 +128,7 @@ namespace TinySTL
 			assign(ilist.begin(), ilist.end());
 		}
 
-		allocator_type get_allocator() const { return allocator_type(); }
+		allocator_type get_allocator() const { return data_allocator; }
 
 		reference at(size_type n)
 		{

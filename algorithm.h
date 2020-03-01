@@ -9,11 +9,11 @@
 #include "iterator.h"
 #include "utility.h"
 
-const int SORT_THRESHOLD = 16;
-const int STABLE_SORT_THRESHOLD = 15;
-
 namespace TinySTL
 {
+	enum { SORT_THRESHOLD = 16 };
+	enum { STABLE_SORT_THRESHOLD = 15 };
+
 	template <class InputIter, class UnaryPredicate>
 	bool all_of(InputIter first, InputIter last, UnaryPredicate pred)
 	{
@@ -50,7 +50,7 @@ namespace TinySTL
 	template <class T>
 	inline const T& median(const T& x, const T& y, const T& z)
 	{
-		return median(x, y, z, less<T, T, bool>());
+		return median(x, y, z, less<>());
 	}
 
 	template <class T, class Compare>
@@ -272,19 +272,7 @@ namespace TinySTL
 	bool is_permutation(InputIter1 first1, InputIter1 last1,
 						InputIter2 first2)
 	{
-		tie(first1, first2) = mismatch(first1, last1, first2);
-		if (first1 == last1)return true;
-		InputIter2 last2 = first2;
-		advance(last2, distance(first1, last1));
-		for (InputIter1 it1 = first1; it1 != last1; ++it1)
-		{
-			if (find(first1, last1, *it1) == it1)
-			{
-				auto n = count(first2, last2, *it1);
-				if (n == 0 || count(first1, last1, *it1) != n)return false;
-			}
-		}
-		return true;
+		return is_permutation(first1, last1, first2, less<>());
 	}
 
 	template <class InputIter1, class InputIter2, class BinaryPredicate>
@@ -424,7 +412,7 @@ namespace TinySTL
 		return result;
 	}
 
-	template <class InputIter, class Size, class OutputIter>
+	template <class InputIter, class OutputIter>
 	OutputIter move(InputIter first, InputIter last, OutputIter result)
 	{
 		while (first != last)
@@ -537,7 +525,7 @@ namespace TinySTL
 	}
 
 	template <class ForwardIter, class Size, class T>
-	ForwardIter fill_n(ForwardIter first, ForwardIter last, Size n, const T& val)
+	ForwardIter fill_n(ForwardIter first, Size n, const T& val)
 	{
 		while (n > 0)
 		{
@@ -750,8 +738,8 @@ namespace TinySTL
 	}
 
 	template <class ForwardIter, class UnaryPredicate>
-	ForwardIter partition(ForwardIter first, ForwardIter last,
-						  UnaryPredicate pred, forward_iterator_tag)
+	ForwardIter _partition(ForwardIter first, ForwardIter last,
+						   UnaryPredicate pred, forward_iterator_tag)
 	{
 		if (first == last)return first;
 		while (pred(*first))
@@ -772,8 +760,8 @@ namespace TinySTL
 	}
 
 	template <class BidirectIter, class UnaryPredicate>
-	BidirectIter partition(BidirectIter first, BidirectIter last,
-						   UnaryPredicate pred, bidirectional_iterator_tag)
+	BidirectIter _partition(BidirectIter first, BidirectIter last,
+						    UnaryPredicate pred, bidirectional_iterator_tag)
 	{
 		while (first != last)
 		{
@@ -791,6 +779,12 @@ namespace TinySTL
 			++first;
 		}
 		return first;
+	}
+
+	template <class Iterator, class UnaryPredicate>
+	Iterator partition(Iterator first, Iterator last, UnaryPredicate pred)
+	{
+		return _partition(first, last, pred, iterator_category(first));
 	}
 
 	template <class ForwardIter, class UnaryPredicate, class Distance>
@@ -940,7 +934,7 @@ namespace TinySTL
 			RandomIter cut = unguarded_partition(first, last, 
 												 median(*first,
 														*(first + (last - first) / 2),
-														*(last - 1), comp));
+														*(last - 1)), comp);
 			introsort(cut, last, depth_limit, comp);
 			last = cut;
 		}
@@ -1052,9 +1046,7 @@ namespace TinySTL
 	template <class RandomIter>
 	void insertion_sort(RandomIter first, RandomIter last)
 	{
-		if (first == last)return;
-		for (RandomIter i = first + 1; i != last; ++i)
-			linear_insert(first, i, value_type(first));
+		return insertion_sort(first, last, less<>());
 	}
 
 	template <class RandomIter, class Compare>
@@ -1075,7 +1067,12 @@ namespace TinySTL
 	void partial_sort(RandomIter first, RandomIter mid, 
 					  RandomIter last, Compare comp)
 	{
-		heap_select(first, mid, last, comp);
+		make_heap(first, mid);
+		for (RandomIter i = mid; i < last; ++i)
+		{
+			if (comp(*i, *first))
+				_pop_heap(first, mid, i, *i, comp);
+		}
 		sort_heap(first, mid, comp);
 	}
 
@@ -1191,7 +1188,7 @@ namespace TinySTL
 		return lower_bound(first, last, val, less<>());
 	}
 
-	template <class ForwardIter,class T,class Compare>
+	template <class ForwardIter, class T, class Compare>
 	ForwardIter lower_bound(ForwardIter first, ForwardIter last,
 							const T& val, Compare comp)
 	{
@@ -1201,11 +1198,12 @@ namespace TinySTL
 		while (count > 0) 
 		{
 			it = first;
-			step = count / 2;
+			step = count >> 1;
 			advance(it, step);
 			if (comp(*it, val)) 
 			{
-				first = ++it;
+				first = it;
+				++first;
 				count -= step + 1;
 			}
 			else
@@ -1262,8 +1260,7 @@ namespace TinySTL
 	template <class ForwardIter, class T>
 	bool binary_search(ForwardIter first, ForwardIter last, const T& val)
 	{
-		first = lower_bound(first, last, val);
-		return (first != last && !(val < *first));
+		return binary_search(first, last, val, less<>());
 	}
 
 	template <class ForwardIter, class T, class Compare>

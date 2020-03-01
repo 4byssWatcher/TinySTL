@@ -10,32 +10,29 @@ namespace TinySTL
     using void_t = void;
 
     template <bool B, class T = void>
-    class enable_if {};
+    struct enable_if {};
 
     template <class T>
-    class enable_if<true, T> { using type = T; };
+    struct enable_if<true, T> { using type = T; };
 
     template <bool B, class T = void>
     using enable_if_t = typename enable_if<B, T>::type;
 
     template<class T>
-    class remove_reference
+    struct remove_reference
     {
-    public:
         using type = T;
     };
 
     template<class T>
-    class remove_reference<T&>
+    struct remove_reference<T&>
     {
-    public:
         using type = T;
     };
 
     template<class T>
-    class remove_reference<T&&>
+    struct remove_reference<T&&>
     {
-    public:
         using type = T;
     };
 
@@ -43,10 +40,11 @@ namespace TinySTL
     using remove_reference_t = typename remove_reference<T>::type;
 
     template <class T, class = void>
-    bool _is_iterator_v = false;
+    constexpr bool _is_iterator_v = false;
 
     template <class T>
-    bool _is_iterator_v<T, void_t<typename iterator_traits<T>::iterator_category>> = true;
+    constexpr bool _is_iterator_v<T, void_t<typename iterator_traits<T>::iterator_category>> = true;
+
 }
 
 #endif /* _TINYSTL_TYPE_TRAITS_H_ */
