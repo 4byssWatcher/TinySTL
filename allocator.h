@@ -1,4 +1,3 @@
-/* pending modification */
 #pragma once
 #ifndef _TINYSTL_ALLOCATE_H_
 #define _TINYSTL_ALLOCATE_H_
@@ -25,6 +24,14 @@ namespace TinySTL
 			*to judge whether Alloc is a default allocator
 		*/
 		using _From_primary   = allocator;
+
+	public:
+		constexpr allocator() noexcept {}
+		constexpr allocator(const allocator& other) noexcept {}
+		template <class U>
+		constexpr allocator(const allocator<U>& other) noexcept {}
+
+		~allocator() {}
 
 		template <typename U>
 		struct rebind

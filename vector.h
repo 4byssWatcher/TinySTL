@@ -76,12 +76,18 @@ namespace TinySTL
 		vector(vector&& other) noexcept
 			:start(other.start), finish(other.finish),
 			 end_of_storage(other.end_of_storage),
-			 data_allocator(other.get_allocator()) {}
+			 data_allocator(other.get_allocator())
+		{
+			other._pointer_clear();
+		}
 
 		vector(vector&& other, const Alloc& alloc)
 			:start(other.start), finish(other.finish),
 			 end_of_storage(other.end_of_storage),
-			 data_allocator(alloc) {}
+			 data_allocator(alloc)
+		{
+			other._pointer_clear();
+		}
 
 		vector(std::initializer_list<T> ilist, const Alloc& alloc = Alloc())
 			:data_allocator(alloc)
@@ -110,8 +116,7 @@ namespace TinySTL
 
 		vector& operator=(std::initializer_list<T> ilist)
 		{
-			_destroy_and_dealloc();
-			_range_init(ilist.begin(), ilist.end());
+			assign(ilist.begin(), ilist.end());
 			return *this;
 		}
 
@@ -138,7 +143,7 @@ namespace TinySTL
 
 		const_reference at(size_type n) const
 		{
-			if (n < size())return (*this)[n];
+			if (n < size()) return (*this)[n];
 			return *start;
 		}
 
@@ -187,10 +192,7 @@ namespace TinySTL
 				_realloc_n_and_move(size(), begin(), end());
 		}
 
-		void clear() noexcept
-		{
-			erase(begin(), end());
-		}
+		void clear() noexcept { erase(begin(), end()); }
 
 		/*
 			it's temporarily beyond my comprehension why use const_iterator here,
@@ -198,21 +200,19 @@ namespace TinySTL
 			pending modification
 		*/
 		iterator insert(iterator pos, const T& val)
-		{
-			return emplace(pos, val);
-		}
+			{ return emplace(pos, val); }
 
 		iterator insert(iterator pos, T&& val)
-		{
-			return emplace(pos, move(val));
-		}
+			{ return emplace(pos, move(val)); }
 
 		iterator insert(iterator pos, size_type n, const T& val)
 		{
 			if (n != 0)
 			{
-				iterator now = _insert_spare_n(pos, n);
-				uninitialized_fill_n(now, n, val, data_allocator);
+				auto now = _insert_spare_n(pos, n);
+				fill(now.first(), now.second(), val);
+				n -= now.second() - now.first();
+				uninitialized_fill_n(now.second(), n, val, data_allocator);
 				return now;
 			}
 			return pos;
@@ -233,7 +233,10 @@ namespace TinySTL
 		iterator emplace(iterator pos, Args&&... args)
 		{
 			iterator now = _insert_spare_n(pos, 1);
-			alloc_traits::construct(data_allocator, now, forward<Args>(args)...);
+			if (now.first() != now.second())
+				*(now.second()) = value_type(forward<Args>(args)...);
+			else
+				alloc_traits::construct(data_allocator, now.second(), forward<Args>(args)...);
 			return now;
 		}
 
@@ -277,17 +280,8 @@ namespace TinySTL
 		template <class... Args>
 		reference emplace_back(Args&&... args)
 		{
-			if (finish != end_of_storage)
-			{
-				alloc_traits::construct(data_allocator, finish, forward<Args>(args)...);
-				++finish;
-				return *(finish - 1);
-			}
-			else
-			{
-				iterator now = emplace(end(), forward<Args>(args)...);
-				return *now;
-			}
+			iterator now = emplace(end(), forward<Args>(args)...);
+			return *now;
 		}
 
 		void pop_back()
@@ -378,13 +372,17 @@ namespace TinySTL
 			if (first != last)
 			{
 				size_type n = distance(first, last);
-				iterator now = _insert_spare_n(pos, n);
-				return uninitialized_copy(first, last, now, data_allocator);
+				auto now = _insert_spare_n(pos, n);
+				iterator mid = first;
+				advance(mid, now.second() - now.first());
+				copy(first, mid, now.first());
+				return uninitialized_copy(mid, last, now.second(), data_allocator);
 			}
 			return pos;
 		}
 
-		typename vector<T, Alloc>::iterator
+		pair<typename vector<T, Alloc>::iterator,
+			 typename vector<T, Alloc>::iterator>
 		_insert_spare_n(iterator pos, size_type n);
 
 		template <class Iterator>
@@ -413,6 +411,13 @@ namespace TinySTL
 		template <class ForwardIter>
 		void _assign(ForwardIter first, ForwardIter last, forward_iterator_tag);
 
+		void _pointer_clear()
+		{
+			start		   = pointer();
+			finish		   = pointer();
+			end_of_storage = pointer();
+		}
+
 	};
 
 	template <class T, class Alloc>
@@ -426,11 +431,8 @@ namespace TinySTL
 			start          = other.start;
 			finish         = other.finish;
 			end_of_storage = other.end_of_storage;
-
-			other.start          = pointer();
-			other.finish         = pointer();
-			other.end_of_storage = pointer();
 		}
+		other._pointer_clear();
 		return *this;
 	}
 
@@ -438,15 +440,10 @@ namespace TinySTL
 	void 
 	vector<T, Alloc>::assign(size_type n, const T& val)
 	{
-		if (n > capacity())
-		{
-			vector<T, Alloc>tmp(n, val);
-			tmp.swap(*this);
-		}
-		else if (n > size())
+		if (n > size())
 		{
 			fill(begin(), end(), val);
-			finish = uninitialized_fill_n(finish, n - size(), val, data_allocator);
+			insert(end(), n - size(), val);
 		}
 		else
 			erase(fill_n(begin(), n, val), end());
@@ -493,20 +490,32 @@ namespace TinySTL
 		}
 	}
 
+	/*
+		initialized block / uninitialized block
+	*/
 	template <class T, class Alloc>
-	typename vector<T, Alloc>::iterator
+	pair<typename vector<T, Alloc>::iterator,
+		 typename vector<T, Alloc>::iterator>
 	vector<T, Alloc>::_insert_spare_n(iterator pos, size_type n)
 	{
 		if (size_type(end_of_storage - finish) >= n)
 		{
-			iterator tmp_finish = finish;
-			iterator new_finish = finish;
-			advance(new_finish, n);
-			for (; tmp_finish != new_finish; ++tmp_finish)
-				alloc_traits::construct(data_allocator, tmp_finish, move(*(tmp_finish - n)));
-			move_backward(pos, finish - n, finish);
-			advance(finish, n);
-			return pos;
+			const size_type elems_after = finish - pos;
+			iterator old_t = finish;
+			if (elems_after > n)
+			{
+				uninitialized_move(finish - n, finish, finish);
+				finish += n;
+				move_backward(pos, old_t - n, old_t);
+				return make_pair(pos, pos + n);
+			}
+			else
+			{
+				finish += n - elems_after;
+				uninitialized_copy(pos, old_t, finish);
+				finish += elems_after;
+				return make_pair(pos, old_t);
+			}
 		}
 		else
 		{
@@ -520,7 +529,7 @@ namespace TinySTL
 			start          = tmp_s;
 			finish         = tmp_t;
 			end_of_storage = start + len;
-			return ret;
+			return make_pair<ret, ret>;
 		}
 	}
 
@@ -570,7 +579,7 @@ namespace TinySTL
 
 	template <class T, class Alloc, class U>
 	constexpr typename vector<T,Alloc>::size_type
-		erase(vector<T, Alloc>& v, const U& value)
+	erase(vector<T, Alloc>& v, const U& value)
 	{
 		auto it = remove(v.begin(), v.end(), value);
 		auto ret = distance(it, v.end());
@@ -580,7 +589,7 @@ namespace TinySTL
 
 	template <class T, class Alloc, class Pred>
 	constexpr typename vector<T, Alloc>::size_type
-		erase_if(vector<T, Alloc>& v, Pred pred)
+	erase_if(vector<T, Alloc>& v, Pred pred)
 	{
 		auto it = remove_if(v.begin(), v.end(), pred);
 		auto ret = distance(it, v.end());
