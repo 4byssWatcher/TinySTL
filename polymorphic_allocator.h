@@ -55,10 +55,8 @@ namespace TinySTL
 	class resource_adaptor_imp :public memory_resource
 	{
 	public:
-		using alloc_traits   =
-			allocator_traits<Allocator>;
-		using allocator_type =
-			Allocator;
+		using alloc_traits   = allocator_traits<Allocator>;
+		using allocator_type = Allocator;
 
 	protected:
 		Allocator m_alloc;
@@ -126,11 +124,14 @@ namespace TinySTL
 		using const_pointer   = const T*;
 
 	public:
-		polymorphic_allocator() 
+		polymorphic_allocator() noexcept
 			:m_resource(get_default_resource()) {}
 		polymorphic_allocator(memory_resource* r)
 			:m_resource(r ? r : get_default_resource()) {}
 		polymorphic_allocator(const polymorphic_allocator& other)
+			:m_resource(other.resource()) {}
+		template <class U>
+		polymorphic_allocator(const polymorphic_allocator<U>& other) noexcept
 			:m_resource(other.resource()) {}
 
 		T* allocate(size_type n)

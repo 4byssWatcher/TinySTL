@@ -10,10 +10,9 @@ namespace TinySTL
 	class bidirectional_iterator_tag :public forward_iterator_tag {};
 	class random_access_iterator_tag :public bidirectional_iterator_tag {};
 
-    template <class T,class Distance>
-    class input_iterator
+    template <class T, class Distance>
+    struct input_iterator
     {
-    public:
         using iterator_category = input_iterator_tag;
         using value_type        = T;
         using difference_type   = Distance;
@@ -21,10 +20,9 @@ namespace TinySTL
         using reference         = T&;
     };
 
-    template <class T,class Distance>
-    class output_iterator
+    template <class T, class Distance>
+    struct output_iterator
     {
-    public:
         using iterator_category = output_iterator_tag;
         using value_type        = void;
         using difference_type   = void;
@@ -32,10 +30,9 @@ namespace TinySTL
         using reference         = void;
     };
 
-    template <class T,class Distance>
-    class forward_iterator
+    template <class T, class Distance>
+    struct forward_iterator
     {
-    public:
         using iterator_category = forward_iterator_tag;
         using value_type        = T;
         using difference_type   = Distance;
@@ -43,10 +40,9 @@ namespace TinySTL
         using reference         = T&;
     };
 
-    template <class T,class Distance>
-    class bidirectional_iterator
+    template <class T, class Distance>
+    struct bidirectional_iterator
     {
-    public:
         using iterator_category = bidirectional_iterator_tag;
         using value_type        = T;
         using difference_type   = Distance;
@@ -54,10 +50,9 @@ namespace TinySTL
         using reference         = T&;
     };
 
-    template <class T,class Distance>
-    class random_access_iterator
+    template <class T, class Distance>
+    struct random_access_iterator
     {
-    public:
         using iterator_category = random_access_iterator_tag;
         using value_type        = T;
         using difference_type   = Distance;
@@ -69,9 +64,8 @@ namespace TinySTL
               class Distance = ptrdiff_t, 
               class Pointer = T*, 
               class Reference = T&>
-    class iterator
+    struct iterator
     {
-    public:
         using iterator_category = Category;
         using value_type        = T;
         using difference_type   = Distance;
@@ -80,9 +74,8 @@ namespace TinySTL
     };
 
     template <class Iterator>
-    class iterator_traits
+    struct iterator_traits
     {
-    public:
         using iterator_category = typename Iterator::iterator_category;
         using value_type        = typename Iterator::value_type;
         using difference_type   = typename Iterator::difference_type;

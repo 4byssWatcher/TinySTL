@@ -27,7 +27,7 @@ namespace TinySTL
 	{
 		using ptr_t = typename _get_pointer_type<T>::type;
 		using val_t = typename T::value_type;
-		using type = typename pointer_traits<ptr_t>::template rebind<const val_t>;
+		using type  = typename pointer_traits<ptr_t>::template rebind<const val_t>;
 	};
 
 	template <class T>
@@ -199,9 +199,9 @@ namespace TinySTL
 		}
 
 		template <class T, class... Args>
-		static void construct(allocator_type alloc, T* ptr, Args&&... args)
+		static void construct(Alloc alloc, T* ptr, Args&&... args)
 		{
-			if constexpr(_has_allocator_construct<allocator_type, T*, Args...>::value)
+			if constexpr (_has_allocator_construct<Alloc, T*, Args...>::value)
 				alloc.construct(ptr, forward<Args>(args)...);
 			else ::new(static_cast<void*>(ptr)) T(forward<Args>(args)...);
 		}
@@ -209,21 +209,22 @@ namespace TinySTL
 		template <class T>
 		static void destroy(Alloc& alloc, T* ptr)
 		{
-			if constexpr(_has_allocator_destroy<alloc, ptr>::value)
+			if constexpr (_has_allocator_destroy<Alloc, T*>::value)
 				alloc.destroy(ptr);
 			else ptr->~T();
 		}
 
-		template <class T>
-		static void destroy(Alloc& alloc, T* first, T* last)
+		template <class Iterator>
+		static void destroy(Alloc& alloc, Iterator iter)
 		{
-			if constexpr (_has_allocator_destroy<Alloc, T*, T*>::value)
-				alloc.destroy(first, last);
-			else
-			{
-				for (; first != last; ++first)
-					first->~T();
-			}
+			destroy(alloc, &*iter);
+		}
+
+		template <class Iterator>
+		static void destroy(Alloc& alloc, Iterator first, Iterator last)
+		{
+			for (; first != last; ++first)
+				destroy(alloc, &*first);
 		}
 
 		static size_type max_size(const Alloc& alloc) noexcept
@@ -298,21 +299,22 @@ namespace TinySTL
 		template <class T>
 		static void destroy(Alloc& alloc, T* ptr)
 		{
-			if constexpr(_has_allocator_destroy<alloc, ptr>::value)
+			if constexpr(_has_allocator_destroy<Alloc, T*>::value)
 				alloc.destroy(ptr);
 			else ptr->~T();
 		}
 
-		template <class T>
-		static void destroy(Alloc& alloc, T* first, T* last)
+		template <class Iterator>
+		static void destroy(Alloc& alloc, Iterator iter)
 		{
-			if constexpr(_has_allocator_destroy<Alloc, T*, T*>::value)
-				alloc.destroy(first, last);
-			else
-			{
-				for (; first != last; ++first)
-					first->~T();
-			}
+			destroy(alloc, &*iter);
+		}
+
+		template <class Iterator>
+		static void destroy(Alloc& alloc, Iterator first, Iterator last)
+		{
+			for (; first != last; ++first)
+				destroy(alloc, &*first);
 		}
 
 		static size_type max_size(const Alloc& alloc) noexcept

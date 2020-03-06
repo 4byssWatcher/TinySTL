@@ -3,10 +3,11 @@
 #define _TINYSTL_VECTOR_H_
 
 #include "algorithm.h"
-#include "allocator.h"
 #include "iterator.h"
 #include "memory.h"
+#include "polymorphic_allocator.h"
 #include "type_traits.h"
+#include "utility.h"
 
 #include <initializer_list> // std::initializer_list
 
@@ -15,7 +16,7 @@ namespace TinySTL
 	template <class T, class Alloc =  polymorphic_allocator<T> >
 	class vector
 	{
-	private:
+	protected:
 		using alloc_traits           = allocator_traits<Alloc>;
 	public:
 		using value_type             = T;
@@ -210,10 +211,10 @@ namespace TinySTL
 			if (n != 0)
 			{
 				auto now = _insert_spare_n(pos, n);
-				fill(now.first(), now.second(), val);
-				n -= now.second() - now.first();
-				uninitialized_fill_n(now.second(), n, val, data_allocator);
-				return now;
+				fill(now.first, now.second, val);
+				n -= now.second - now.first;
+				uninitialized_fill_n(now.second, n, val, data_allocator);
+				return now.first;
 			}
 			return pos;
 		}
@@ -232,12 +233,12 @@ namespace TinySTL
 		template <class... Args>
 		iterator emplace(iterator pos, Args&&... args)
 		{
-			iterator now = _insert_spare_n(pos, 1);
-			if (now.first() != now.second())
-				*(now.second()) = value_type(forward<Args>(args)...);
+			auto now = _insert_spare_n(pos, 1);
+			if (now.first != now.second)
+				*(now.second) = value_type(forward<Args>(args)...);
 			else
-				alloc_traits::construct(data_allocator, now.second(), forward<Args>(args)...);
-			return now;
+				alloc_traits::construct(data_allocator, now.second, forward<Args>(args)...);
+			return now.first;
 		}
 
 		iterator erase(iterator pos)
@@ -374,9 +375,9 @@ namespace TinySTL
 				size_type n = distance(first, last);
 				auto now = _insert_spare_n(pos, n);
 				iterator mid = first;
-				advance(mid, now.second() - now.first());
-				copy(first, mid, now.first());
-				return uninitialized_copy(mid, last, now.second(), data_allocator);
+				advance(mid, now.second - now.first);
+				copy(first, mid, now.first);
+				return uninitialized_copy(mid, last, now.second, data_allocator);
 			}
 			return pos;
 		}
@@ -504,7 +505,7 @@ namespace TinySTL
 			iterator old_t = finish;
 			if (elems_after > n)
 			{
-				uninitialized_move(finish - n, finish, finish);
+				uninitialized_move(finish - n, finish, finish, data_allocator);
 				finish += n;
 				move_backward(pos, old_t - n, old_t);
 				return make_pair(pos, pos + n);
@@ -512,7 +513,7 @@ namespace TinySTL
 			else
 			{
 				finish += n - elems_after;
-				uninitialized_copy(pos, old_t, finish);
+				uninitialized_copy(pos, old_t, finish, data_allocator);
 				finish += elems_after;
 				return make_pair(pos, old_t);
 			}
@@ -529,7 +530,7 @@ namespace TinySTL
 			start          = tmp_s;
 			finish         = tmp_t;
 			end_of_storage = start + len;
-			return make_pair<ret, ret>;
+			return make_pair(ret, ret);
 		}
 	}
 

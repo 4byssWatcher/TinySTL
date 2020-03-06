@@ -57,7 +57,7 @@ namespace TinySTL
 		pair(const pair<U, V>& x) :first(x.first), second(x.second) {}
 
 		template<class U, class V>
-		pair(pair<U, V>&& x) :first(forward(x.first)), second(forward(x.second)) {}
+		pair(pair<U, V>&& x) :first(forward<U>(x.first)), second(forward<V>(x.second)) {}
 
 		pair(const pair& x) = default;
 
@@ -66,7 +66,7 @@ namespace TinySTL
 		pair(const T1& x, const T2& y) :first(x), second(y) {}
 
 		template<class U, class V>
-		pair(U&& x, V&& y) : first(forward(x)), second(forward(y)) {}
+		pair(U&& x, V&& y) : first(forward<U>(x)), second(forward<V>(y)) {}
 
 		pair& operator =(const pair& x)
 		{

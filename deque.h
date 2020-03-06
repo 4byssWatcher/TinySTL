@@ -2,12 +2,14 @@
 #ifndef _TINYSTL_DEQUE_H_
 #define _TINYSTL_DEQUE_H_
 
+#include "algorithm.h"
 #include "iterator.h"
 #include "memory.h"
 #include "polymorphic_allocator.h"
 #include "type_traits.h"
 
 #include <initializer_list> // std::initializer_list
+#include <tuple> //std::tuple
 
 namespace TinySTL
 {
@@ -18,7 +20,7 @@ namespace TinySTL
 		return size < 512 ? size_t(512 / size) : size_t(1);
 	}
 
-	template <class T, class Alloc = polymorphic_allocator<T> >
+	template <class T, class Alloc>
 	class deque;
 
 	template <class T, class Ref, class Ptr>
@@ -123,7 +125,7 @@ namespace TinySTL
 			return tmp += n;
 		}
 
-		self* operator-=(difference_type n)
+		self& operator-=(difference_type n)
 		{
 			return *this += -n;
 		}
@@ -169,7 +171,7 @@ namespace TinySTL
 	{
 	public:
 		using value_type			 = T;
-		using iterator				 = deque_iterator<T,T&,T*>;
+		using iterator				 = deque_iterator<T, T&, T*>;
 		using const_iterator		 = deque_iterator<T, const T&, const T*>;
 		using pointer				 = T*;
 		using const_pointer			 = const T*;
@@ -200,7 +202,11 @@ namespace TinySTL
 
 	public:
 		explicit deque(const Alloc& alloc = Alloc())
-			:start(0), finish(0), map(0), data_allocator(alloc), map_allocator(alloc) {}
+			:start(), finish(), map(0), map_size(0), 
+			 data_allocator(alloc), map_allocator(alloc)
+		{
+			_initialize_map(0);
+		}
 
 		explicit deque(size_type n, const T& val = T(), const Alloc& alloc = Alloc())
 			:data_allocator(alloc), map_allocator(alloc)
@@ -252,6 +258,18 @@ namespace TinySTL
 			:data_allocator(alloc), map_allocator(alloc)
 		{
 			_range_init(ilist.begin(), ilist.end());
+		}
+
+		~deque()
+		{
+			alloc_traits::destroy(data_allocator, start, finish);
+			for (auto i=start.node; i != finish.node; ++i)
+			{
+				if (*i != nullptr)
+					alloc_traits::deallocate(data_allocator, *i, buffer_size());
+			}
+			_destroy_nodes(start.node, finish.node + 1);
+			map_alloc_traits::deallocate(map_allocator, map, map_size);
 		}
 
 		deque& operator=(const deque& other)
@@ -350,7 +368,7 @@ namespace TinySTL
 			}
 		}
 
-		void clear() noexcept { erase(begin(), end()); }
+		void clear();
 
 		iterator insert(iterator pos, const T& val)
 			{ return emplace(pos, val); }
@@ -403,47 +421,26 @@ namespace TinySTL
 			iterator aim = std::get<1>(now);
 
 			if (t1 ^ t2) //unini
-				alloc_traits::construct(data_allocator, aim, forward<Args>(args)...);
+				alloc_traits::construct(data_allocator, aim.cur, forward<Args>(args)...);
 			else //ini
 				*aim = value_type(forward<Args>(args)...);
 			return aim;
 		}
 
-		iterator erase(iterator pos)
-		{
-			if (pos + 1 != end())
-				move(pos + 1, finish, pos);
-			--finish;
-			alloc_traits::destroy(finish);
-			return pos;
-		}
+		typename deque<T, Alloc>::iterator
+			erase(iterator pos);
 
-		iterator erase(iterator first, iterator last)
-		{
-			iterator tmp = move(last, finish, first);
-			alloc_traits::destroy(data_allocator, tmp, finish);
-			finish = finish - (last - first);
-			return first;
-		}
+		typename deque<T, Alloc>::iterator
+			erase(iterator first, iterator last);
 
 		void push_back(const T& val)
 		{
-			if (finish.cur != finish.last - 1)
-			{
-				alloc_traits::construct(data_allocator, finish.cur, val);
-				++finish.cur;
-			}
-			else emplace(end(), val);
+			emplace(end(), val);
 		}
 
 		void push_back(T&& val)
 		{
-			if (finish.cur != finish.last - 1)
-			{
-				alloc_traits::construct(data_allocator, finish.cur, move(val));
-				++finish.cur;
-			}
-			else emplace(end(), move(val));
+			emplace(end(), move(val));
 		}
 
 		template <class... Args>
@@ -457,6 +454,29 @@ namespace TinySTL
 		{
 			--finish;
 			alloc_traits::destroy(data_allocator, finish);
+		}
+
+		void push_front(const T& val)
+		{
+			emplace(begin(), val);
+		}
+
+		void push_front(T&& val)
+		{
+			emplace(begin(), move(val));
+		}
+
+		template <class... Args>
+		reference emplace_front(Args&&... args)
+		{
+			iterator now = emplace(begin(), forward<Args>(args)...);
+			return *now;
+		}
+
+		void pop_front()
+		{
+			alloc_traits::destroy(data_allocator, start);
+			++start;
 		}
 
 		void resize(size_type new_size, T val = T())
@@ -481,7 +501,14 @@ namespace TinySTL
 		template <class ForwardIter>
 		void _assign(ForwardIter first, ForwardIter last, forward_iterator_tag);
 
+		void _destroy_nodes(map_pointer first, map_pointer last)
+		{
+			for (; first != last; ++first)
+				alloc_traits::deallocate(data_allocator, *first, buffer_size());
+		}
+
 		void _initialize_map(size_type n);
+		void _reallocate_map(size_type n, bool at_front);
 
 		template <class InputIter>
 		iterator _insert(iterator pos, InputIter first,
@@ -502,9 +529,9 @@ namespace TinySTL
 			if (first != last)
 			{
 				size_type n = distance(first, last);
-				iterator now = _insert_spare_n(pos, n);
+				auto now = _insert_spare_n(pos, n);
 
-				iterator mid = first;
+				ForwardIter mid = first;
 				iterator ret = std::get<1>(now), aim = ret;
 				advance(mid, std::get<2>(now) - std::get<1>(now));
 
@@ -515,7 +542,7 @@ namespace TinySTL
 				}
 				else
 				{
-					aim = copy(first, mid, aim, data_allocator);
+					aim = copy(first, mid, aim);
 					uninitialized_copy(mid, last, aim, data_allocator);
 				}
 				return ret;
@@ -549,6 +576,50 @@ namespace TinySTL
 			size_type n = distance(first, last);
 			_initialize_map(n);
 			uninitialized_copy(first, last, start, data_allocator);
+		}
+
+		iterator _reserve_elements_at_front(size_type n)
+		{
+			size_type vac = start.cur - start.first;
+			if (n > vac)_new_elements_at_front(n - vac);
+			return start - difference_type(n);
+		}
+
+		iterator _reserve_elements_at_back(size_type n)
+		{
+			size_type vac = finish.last - finish.cur;
+			if (n > vac)_new_elements_at_back(n - vac);
+			return finish + difference_type(n);
+		}
+
+		void _reserve_map_at_front(size_type n)
+		{
+			if (n > size_type(start.node - map))
+				_reallocate_map(n, true);
+		}
+
+		void _reserve_map_at_back(size_type n)
+		{
+			if (n + 1 > map_size - (finish.node - map))
+				_reallocate_map(n, false);
+		}
+
+		void _new_elements_at_front(size_type n)
+		{
+			size_type new_nodes = (n + buffer_size() - 1) / buffer_size();
+			_reserve_map_at_front(new_nodes);
+			for (size_type i = 1; i <= new_nodes; ++i)
+				*(start.node - i) = alloc_traits::allocate(data_allocator,
+														   buffer_size());
+		}
+
+		void _new_elements_at_back(size_type n)
+		{
+			size_type new_nodes = (n + buffer_size() - 1) / buffer_size();
+			_reserve_map_at_back(new_nodes);
+			for (size_type i = 1; i <= new_nodes; ++i)
+				*(finish.node + i) = alloc_traits::allocate(data_allocator,
+															buffer_size());
 		}
 
 		void _pointer_clear()
@@ -608,20 +679,97 @@ namespace TinySTL
 
 	template <class T, class Alloc>
 	void
+	deque<T, Alloc>::clear()
+	{
+		for (auto node = start.node + 1; node < finish.node; ++node)
+		{
+			alloc_traits::destroy(data_allocator, *node, *node + buffer_size());
+			alloc_traits::deallocate(data_allocator, *node, buffer_size());
+		}
+		if (start.node != finish.node)
+		{
+			alloc_traits::destroy(data_allocator, start.cur, start.last);
+			alloc_traits::destroy(data_allocator, finish.first, finish.cur);
+			alloc_traits::deallocate(data_allocator, finish.first, buffer_size());
+		}
+		else
+			alloc_traits::destroy(data_allocator, start.cur, finish.cur);
+
+		finish = start;
+	}
+
+	template <class T, class Alloc>
+	typename deque<T, Alloc>::iterator
+	deque<T, Alloc>::erase(iterator pos)
+	{
+		iterator next = pos;
+		++next;
+		difference_type index = pos - start;
+		if (size_type(index) < (size() >> 1))
+		{
+			copy_backward(start, pos, next);
+			pop_front();
+		}
+		else
+		{
+			copy(next, finish, pos);
+			pop_back();
+		}
+		return start + index;
+	}
+
+	template <class T, class Alloc>
+	typename deque<T, Alloc>::iterator
+	deque<T, Alloc>::erase(iterator first, iterator last)
+	{
+		if (first == start && last == finish)
+		{
+			clear();
+			return finish;
+		}
+		else
+		{
+			difference_type n = last - first;
+			difference_type elems_before = first - start;
+			if (elems_before < difference_type((size() - n) / 2))
+			{
+				copy_backward(start, first, last);
+				iterator new_start = start + n;
+				alloc_traits::destroy(data_allocator, start, new_start);
+				_destroy_nodes(start.node, new_start.node);
+				start = new_start;
+			}
+			else
+			{
+				copy(last, finish, first);
+				iterator new_finish = finish - n;
+				alloc_traits::destroy(data_allocator, new_finish, finish);
+				_destroy_nodes(new_finish.node + 1, finish.node + 1);
+				finish = new_finish;
+			}
+			return start + elems_before;
+		}
+	}
+
+	template <class T, class Alloc>
+	void
 	deque<T, Alloc>::_initialize_map(size_type n)
 	{
 		size_type num_nodes = n / buffer_size() + 1;
 
-		map_size = max(DEQUE_INITIAL_MAP_SIZE, num_nodes + 2);
-		map = alloc_traits::allocate(map_allocator, map_size);
+		map_size = max((size_type)DEQUE_INITIAL_MAP_SIZE, num_nodes + 2);
+		map = map_alloc_traits::allocate(map_allocator, map_size);
 
-		map_pointer tmp_s = map + (map_size - num_nodes) / 2;
-		map_pointer tmp_t = tmp_s + num_nodes;
+		map_pointer new_s = map + (map_size - num_nodes) / 2;
+		map_pointer new_t = new_s + num_nodes;
+		map_pointer tmp_s = new_s;
 
-		for (; tmp_s != tmp_t; ++tmp_s)
-			*tmp_s = map_alloc_traits::allocate(data_allocator,
-												buffer_size());
+		for (; tmp_s != new_t; ++tmp_s)
+			*tmp_s = alloc_traits::allocate(data_allocator,
+											buffer_size());
 
+		start._set_node(new_s);
+		finish._set_node(new_t - 1);
 		start.cur  = start.first;
 		finish.cur = finish.first + n % buffer_size();
 	}
@@ -630,6 +778,9 @@ namespace TinySTL
 		tuple(bool, iter, iter)
 		true  : uninitialized block / initialized block
 		false : initialized block / uninitialized block
+		it seems more complicated though...
+		later I may write it separately in each function instead of code reuse
+		(once I can identify clearly which one is better)
 	*/
 	template <class T, class Alloc>
 	std::tuple<bool, typename deque<T, Alloc>::iterator,
@@ -640,7 +791,7 @@ namespace TinySTL
 		size_type len = size();
 		if (elems_before < difference_type(len / 2))
 		{
-			iterator new_s = reserve_elements_at_front(n);
+			iterator new_s = _reserve_elements_at_front(n);
 			iterator old_s = start;
 			if (elems_before > difference_type(n))
 			{
@@ -648,37 +799,140 @@ namespace TinySTL
 				uninitialized_move(start, start_n, new_s, data_allocator);
 				copy(start_n, pos, start);
 				start = new_s;
-				return make_tuple(true, pos - difference_type(n),
-										pos - difference_type(n));
+				return std::make_tuple(true, pos - difference_type(n),
+											 pos - difference_type(n));
 			}
 			else
 			{
-				uninitialized_move(start, pos, new_s, data_allocator);
+				if(pos != start)
+					uninitialized_move(start, pos, new_s, data_allocator);
 				start = new_s;
-				return make_tuple(true, pos - difference_type(n), old_s);
+				return std::make_tuple(true, pos - difference_type(n), old_s);
 			}
 		}
 		else
 		{
-			iterator new_t = reserve_elements_at_back(n);
+			iterator new_t = _reserve_elements_at_back(n);
 			iterator old_t = finish;
-			const difference_type elems_after = difference_type(len);
+			const difference_type elems_after =
+				difference_type(len) - elems_before;
+
 			if (elems_after > difference_type(n))
 			{
 				iterator finish_n = finish - difference_type(n);
 				uninitialized_move(finish_n, finish, finish, data_allocator);
 				finish = new_t;
 				copy_backward(pos, finish_n, old_t);
-				return make_tuple(true, pos, pos);
+				return std::make_tuple(true, pos, pos);
 			}
 			else
 			{
-				uninitialized_move(pos, finish, pos + difference_type(n), data_allocator);
+				if(pos != finish)
+					uninitialized_move(pos, finish, pos + difference_type(n),
+									   data_allocator);
 				finish = new_t;
-				return make_pair(false, pos, old_t);
+				return std::make_tuple(false, pos, old_t);
 			}
 		}
 	}
+
+	template <class T, class Alloc>
+	void
+	deque<T, Alloc>::_reallocate_map(size_type n, bool at_front)
+	{
+		size_type old_nodes = finish.node - start.node + 1;
+		size_type new_nodes = old_nodes + n;
+
+		map_pointer new_start;
+		if (map_size > 2 * new_nodes)
+		{
+			new_start = map + (map_size - new_nodes) / 2
+							+ (at_front ? n : 0);
+			if (new_start < start.node)
+				copy(start.node, finish.node + 1, new_start);
+			else
+				copy_backward(start.node, finish.node + 1,
+							  new_start + old_nodes);
+		}
+		else
+		{
+			size_type new_map_size = map_size + max(map_size, n) + 2;
+			map_pointer new_map =
+				map_alloc_traits::allocate(map_allocator, new_map_size);
+			new_start = new_map + (new_map_size - new_nodes) / 2
+								+ (at_front ? n : 0);
+			copy(start.node, finish.node + 1, new_start);
+			map_alloc_traits::deallocate(map_allocator, map, map_size);
+
+			map		 = new_map;
+			map_size = new_map_size;
+		}
+	}
+
+	template <class T, class Alloc>
+	bool operator ==(const deque<T, Alloc>& lhs, const deque<T, Alloc>& rhs)
+	{
+		return lhs.size() == rhs.size() &&
+			equal(lhs.begin(), lhs.end(), rhs.begin());
+	}
+
+	template <class T, class Alloc>
+	bool operator !=(const deque<T, Alloc>& lhs, const deque<T, Alloc>& rhs)
+	{
+		return !(lhs == rhs);
+	}
+
+	template <class T, class Alloc>
+	bool operator <(const deque<T, Alloc>& lhs, const deque<T, Alloc>& rhs)
+	{
+		return lexicographical_compare(lhs.begin(), lhs.end(),
+			rhs.begin(), rhs.end());
+	}
+
+	template <class T, class Alloc>
+	bool operator <=(const deque<T, Alloc>& lhs, const deque<T, Alloc>& rhs)
+	{
+		return !(lhs > rhs);
+	}
+
+	template <class T, class Alloc>
+	bool operator >(const deque<T, Alloc>& lhs, const deque<T, Alloc>& rhs)
+	{
+		return rhs < lhs;
+	}
+
+	template <class T, class Alloc>
+	bool operator >=(const deque<T, Alloc>& lhs, const deque<T, Alloc>& rhs)
+	{
+		return !(lhs < rhs);
+	}
+
+	template <class T, class Alloc>
+	inline void swap(deque<T, Alloc>& x, deque<T, Alloc>& y)
+	{
+		x.swap(y);
+	}
+
+	template <class T, class Alloc, class U>
+	constexpr typename deque<T, Alloc>::size_type
+	erase(deque<T, Alloc>& v, const U& value)
+	{
+		auto it = remove(v.begin(), v.end(), value);
+		auto ret = distance(it, v.end());
+		v.erase(it, v.end());
+		return ret;
+	}
+
+	template <class T, class Alloc, class Pred>
+	constexpr typename deque<T, Alloc>::size_type
+	erase_if(deque<T, Alloc>& v, Pred pred)
+	{
+		auto it = remove_if(v.begin(), v.end(), pred);
+		auto ret = distance(it, v.end());
+		v.erase(it, v.end());
+		return ret;
+	}
+
 }
 
 #endif /* _TINYSTL_DEQUE_H_ */
