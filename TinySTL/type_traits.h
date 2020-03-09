@@ -2,8 +2,6 @@
 #ifndef _TINYSTL_TYPE_TRAITS_H_
 #define _TINYSTL_TYPE_TRAITS_H_
 
-#include "iterator.h"
-
 namespace TinySTL
 {
     template <class ...>
@@ -38,13 +36,6 @@ namespace TinySTL
 
     template <class T>
     using remove_reference_t = typename remove_reference<T>::type;
-
-    template <class T, class = void>
-    constexpr bool _is_iterator_v = false;
-
-    template <class T>
-    constexpr bool _is_iterator_v<T, void_t<typename iterator_traits<T>::iterator_category> > = true;
-
 }
 
 #endif /* _TINYSTL_TYPE_TRAITS_H_ */

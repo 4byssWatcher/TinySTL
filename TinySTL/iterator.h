@@ -2,6 +2,8 @@
 #ifndef _TINYSTL_ITERATOR_H_
 #define _TINYSTL_ITERATOR_H_
 
+#include "type_traits.h"
+
 namespace TinySTL
 {
     class input_iterator_tag{};
@@ -73,8 +75,11 @@ namespace TinySTL
         using reference         = Reference;
     };
 
+    template <class Non_Iter, class = void>
+    struct iterator_traits_base {};
+
     template <class Iterator>
-    struct iterator_traits
+    struct iterator_traits_base<Iterator, void_t<typename Iterator::iterator_category> >
     {
         using iterator_category = typename Iterator::iterator_category;
         using value_type        = typename Iterator::value_type;
@@ -83,10 +88,12 @@ namespace TinySTL
         using reference         = typename Iterator::reference;
     };
 
+    template <class Iterator>
+    struct iterator_traits :iterator_traits_base<Iterator> {};
+
     template <class T>
-    class iterator_traits<T*>
+    struct iterator_traits<T*>
     {
-    public:
         using iterator_category = random_access_iterator_tag;
         using value_type        = T;
         using difference_type   = ptrdiff_t;
@@ -95,9 +102,8 @@ namespace TinySTL
     };
 
     template <class T>
-    class iterator_traits<const T*>
+    struct iterator_traits<const T*>
     {
-    public:
         using iterator_category = random_access_iterator_tag;
         using value_type        = T;
         using difference_type   = ptrdiff_t;
@@ -287,6 +293,12 @@ namespace TinySTL
                 ++first;
         }
     }
+
+    template <class T, class U = void>
+    constexpr bool _is_iterator_v = false;
+
+    template <class T>
+    constexpr bool _is_iterator_v<T, void_t<typename iterator_traits<T>::iterator_category>> = true;
 }
 
 #endif /* _TINYSTL_ITERATOR_H_ */

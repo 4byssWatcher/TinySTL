@@ -356,7 +356,8 @@ namespace TinySTL
 	ForwardIter uninitialized_copy(InputIter first, InputIter last,
 								   ForwardIter result, Alloc& alloc)
 	{
-		return _uninitialized_copy(first, last, result, std::is_trivial<InputIter>(), alloc);
+		using Value = typename iterator_traits<ForwardIter>::value_type;
+		return _uninitialized_copy(first, last, result, std::is_trivial<Value>(), alloc);
 	}
 
 	template <class InputIter, class ForwardIter, class Alloc>
@@ -370,14 +371,13 @@ namespace TinySTL
 	ForwardIter _uninitialized_copy(InputIter first, InputIter last, ForwardIter result,
 									std::false_type, Alloc& alloc)
 	{
-		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = result;
 		try 
 		{
 			for (; first != last; ++first, ++current)
 			{
 				allocator_traits<Alloc>::construct(alloc,
-					static_cast<Value*>(addressof(*current)), Value(*first));
+					addressof(*current), *first);
 			}
 			return current;
 		}
@@ -395,7 +395,8 @@ namespace TinySTL
 	ForwardIter uninitialized_fill(ForwardIter first, ForwardIter last,
 								   const T& val, Alloc& alloc)
 	{
-		_uninitialized_fill(first, last, val, std::is_trivial<ForwardIter>(), alloc);
+		using Value = typename iterator_traits<ForwardIter>::value_type;
+		_uninitialized_fill(first, last, val, std::is_trivial<Value>(), alloc);
 	}
 
 	template <class ForwardIter, class T, class Alloc>
@@ -409,14 +410,13 @@ namespace TinySTL
 	ForwardIter _uninitialized_fill(ForwardIter first, ForwardIter last,
 									const T& val, std::false_type, Alloc& alloc)
 	{
-		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = first;
 		try
 		{
 			for (; current != last; ++current)
 			{
 				allocator_traits<Alloc>::construct(alloc,
-					static_cast<Value*>(addressof(*current)), Value(val));
+					addressof(*current), val);
 			}
 			return current;
 		}
@@ -434,7 +434,8 @@ namespace TinySTL
 	ForwardIter uninitialized_fill_n(ForwardIter first, Size n,
 									 const T& val, Alloc& alloc)
 	{
-		return _uninitialized_fill_n(first, n, val, std::is_trivial<ForwardIter>(), alloc);
+		using Value = typename iterator_traits<ForwardIter>::value_type;
+		return _uninitialized_fill_n(first, n, val, std::is_trivial<Value>(), alloc);
 	}
 
 	template <class ForwardIter, class Size, class T, class Alloc>
@@ -448,14 +449,13 @@ namespace TinySTL
 	ForwardIter _uninitialized_fill_n(ForwardIter first, Size n, const T& val,
 									  std::false_type, Alloc& alloc)
 	{
-		using Value = typename iterator_traits<ForwardIter>::value_type;
 		ForwardIter current = first;
 		try
 		{
 			for (; n>0; --n, ++current)
 			{
 				allocator_traits<Alloc>::construct(alloc,
-					static_cast<Value*>(addressof(*current)), Value(val));
+					addressof(*current), val);
 			}
 			return current;
 		}
@@ -473,7 +473,8 @@ namespace TinySTL
 	ForwardIter uninitialized_move(InputIter first, InputIter last,
 								   ForwardIter result, Alloc& alloc)
 	{
-		return _uninitialized_move(first, last, result, std::is_trivial<InputIter>(), alloc);
+		using Value = typename iterator_traits<ForwardIter>::value_type;
+		return _uninitialized_move(first, last, result, std::is_trivial<Value>(), alloc);
 	}
 
 	template <class InputIter, class ForwardIter, class Alloc>
@@ -487,14 +488,13 @@ namespace TinySTL
 	ForwardIter _uninitialized_move(InputIter first, InputIter last, ForwardIter result,
 									std::false_type, Alloc& alloc)
 	{
-		using Value = typename iterator_traits<ForwardIter>::value_type;
-		ForwardIter current = first;
+		ForwardIter current = result;
 		try
 		{
 			for (; first != last; ++first, ++current)
 			{
 				allocator_traits<Alloc>::construct(alloc,
-					static_cast<Value*>(addressof(*current)), Value(move(*first)));
+					addressof(*current), move(*first));
 			}
 			return current;
 		}

@@ -77,8 +77,8 @@ namespace TinySTL
 
 		pair& operator =(pair&& x)
 		{
-			first = forward(x.first);
-			second = forward(x.second);
+			first = forward<T1>(x.first);
+			second = forward<T2>(x.second);
 			return *this;
 		}
 
@@ -104,12 +104,6 @@ namespace TinySTL
 			swap(first, x.first);
 			swap(second, x.second);
 		}
-		friend bool operator== (const pair& lhs, const pair& rhs);
-		friend bool operator!= (const pair& lhs, const pair& rhs);
-		friend bool operator<  (const pair& lhs, const pair& rhs);
-		friend bool operator<= (const pair& lhs, const pair& rhs);
-		friend bool operator>  (const pair& lhs, const pair& rhs);
-		friend bool operator>= (const pair& lhs, const pair& rhs);
 	};
 	template<class T1, class T2>
 	bool operator== (const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)

@@ -10,6 +10,7 @@
 #include "utility.h"
 
 #include <initializer_list> // std::initializer_list
+#include <xtr1common>
 
 namespace TinySTL
 {
@@ -246,7 +247,7 @@ namespace TinySTL
 			if (pos + 1 != end())
 				move(pos + 1, finish, pos);
 			--finish;
-			alloc_traits::destroy(finish);
+			alloc_traits::destroy(data_allocator, finish);
 			return pos;
 		}
 
@@ -300,9 +301,9 @@ namespace TinySTL
 
 		void swap(vector& other)
 		{
-			swap(start, other.start);
-			swap(finish, other.finish);
-			swap(end_of_storage, other.end_of_storage);
+			TinySTL::swap(start, other.start);
+			TinySTL::swap(finish, other.finish);
+			TinySTL::swap(end_of_storage, other.end_of_storage);
 		}
 
 
@@ -513,8 +514,11 @@ namespace TinySTL
 			else
 			{
 				finish += n - elems_after;
-				uninitialized_copy(pos, old_t, finish, data_allocator);
-				finish += elems_after;
+				if (pos != finish)
+				{
+					uninitialized_copy(pos, old_t, finish, data_allocator);
+					finish += elems_after;
+				}
 				return make_pair(pos, old_t);
 			}
 		}
