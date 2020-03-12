@@ -396,7 +396,7 @@ namespace TinySTL
 								   const T& val, Alloc& alloc)
 	{
 		using Value = typename iterator_traits<ForwardIter>::value_type;
-		_uninitialized_fill(first, last, val, std::is_trivial<Value>(), alloc);
+		return _uninitialized_fill(first, last, val, std::is_trivial<Value>(), alloc);
 	}
 
 	template <class ForwardIter, class T, class Alloc>

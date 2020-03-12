@@ -263,11 +263,6 @@ namespace TinySTL
 		~deque()
 		{
 			alloc_traits::destroy(data_allocator, start, finish);
-			for (auto i=start.node; i != finish.node; ++i)
-			{
-				if (*i != nullptr)
-					alloc_traits::deallocate(data_allocator, *i, buffer_size());
-			}
 			_destroy_nodes(start.node, finish.node + 1);
 			map_alloc_traits::deallocate(map_allocator, map, map_size);
 		}
@@ -312,7 +307,7 @@ namespace TinySTL
 			assign(ilist.begin(), ilist.end());
 		}
 
-		allocator_type get_allocator()
+		allocator_type get_allocator() const
 			{ return data_allocator; }
 
 		reference at(size_type n)
@@ -359,12 +354,12 @@ namespace TinySTL
 		void shrink_to_fit()
 		{
 			size_type new_size = size() / buffer_size() + 1;
-			new_size = max(DEQUE_INITIAL_MAP_SIZE, new_size + 2);
+			new_size = max(size_type(DEQUE_INITIAL_MAP_SIZE), new_size + 2);
 
 			if (new_size < map_size)
 			{
 				deque tmp(begin(), end());
-				this.swap(tmp);
+				(*this).swap(tmp);
 			}
 		}
 
@@ -408,7 +403,8 @@ namespace TinySTL
 
 		iterator insert(iterator pos, std::initializer_list<T> ilist)
 		{
-			return _insert(pos, ilist.begin(), ilist.end(), iterator_category(ilist.begin()));
+			return _insert(pos, ilist.begin(), ilist.end(),
+						   iterator_category(ilist.begin()));
 		}
 
 		template <class... Args>
@@ -424,6 +420,7 @@ namespace TinySTL
 				alloc_traits::construct(data_allocator, aim.cur, forward<Args>(args)...);
 			else //ini
 				*aim = value_type(forward<Args>(args)...);
+
 			return aim;
 		}
 
@@ -488,10 +485,10 @@ namespace TinySTL
 
 		void swap(deque& other)
 		{
-			swap(start, other.start);
-			swap(finish, other.finish);
-			swap(map, other.map);
-			swap(map_size, other.map_size);
+			TinySTL::swap(start, other.start);
+			TinySTL::swap(finish, other.finish);
+			TinySTL::swap(map, other.map);
+			TinySTL::swap(map_size, other.map_size);
 		}
 
 	protected:
@@ -587,7 +584,7 @@ namespace TinySTL
 
 		iterator _reserve_elements_at_back(size_type n)
 		{
-			size_type vac = finish.last - finish.cur;
+			size_type vac = finish.last - finish.cur - 1;
 			if (n > vac)_new_elements_at_back(n - vac);
 			return finish + difference_type(n);
 		}
@@ -642,7 +639,7 @@ namespace TinySTL
 			insert(end(), n - size(), val);
 		}
 		else
-			erase(fill(begin(), end(), val), end());
+			erase(fill(begin(), begin() + n, val), end());
 	}
 
 	template <class T, class Alloc>
@@ -674,7 +671,7 @@ namespace TinySTL
 			copy(first, mid, begin());
 			insert(end(), mid, last);
 		}
-		else erase(copy(first, last, begin(), end()));
+		else erase(copy(first, last, begin()), end());
 	}
 
 	template <class T, class Alloc>
@@ -762,9 +759,8 @@ namespace TinySTL
 
 		map_pointer new_s = map + (map_size - num_nodes) / 2;
 		map_pointer new_t = new_s + num_nodes;
-		map_pointer tmp_s = new_s;
 
-		for (; tmp_s != new_t; ++tmp_s)
+		for (auto tmp_s = new_s; tmp_s != new_t; ++tmp_s)
 			*tmp_s = alloc_traits::allocate(data_allocator,
 											buffer_size());
 
@@ -849,9 +845,9 @@ namespace TinySTL
 			new_start = map + (map_size - new_nodes) / 2
 							+ (at_front ? n : 0);
 			if (new_start < start.node)
-				copy(start.node, finish.node + 1, new_start);
+				move(start.node, finish.node + 1, new_start);
 			else
-				copy_backward(start.node, finish.node + 1,
+				move_backward(start.node, finish.node + 1,
 							  new_start + old_nodes);
 		}
 		else
@@ -861,12 +857,19 @@ namespace TinySTL
 				map_alloc_traits::allocate(map_allocator, new_map_size);
 			new_start = new_map + (new_map_size - new_nodes) / 2
 								+ (at_front ? n : 0);
-			copy(start.node, finish.node + 1, new_start);
+			move(start.node, finish.node + 1, new_start);
 			map_alloc_traits::deallocate(map_allocator, map, map_size);
 
 			map		 = new_map;
 			map_size = new_map_size;
 		}
+
+		difference_type d1 = start.cur - start.first;
+		difference_type d2 = finish.cur - finish.first;
+		start._set_node(new_start);
+		finish._set_node(new_start + old_nodes - 1);
+		start.cur  = start.first + d1;
+		finish.cur = finish.first + d2;
 	}
 
 	template <class T, class Alloc>

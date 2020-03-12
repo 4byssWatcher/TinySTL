@@ -101,8 +101,8 @@ namespace TinySTL
 	public:
 		void swap(pair& x)
 		{
-			swap(first, x.first);
-			swap(second, x.second);
+			TinySTL::swap(first, x.first);
+			TinySTL::swap(second, x.second);
 		}
 	};
 	template<class T1, class T2>

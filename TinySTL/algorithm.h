@@ -515,13 +515,14 @@ namespace TinySTL
 	}
 
 	template <class ForwardIter, class T>
-	void fill(ForwardIter first, ForwardIter last, const T& val)
+	ForwardIter fill(ForwardIter first, ForwardIter last, const T& val)
 	{
 		while (first != last)
 		{
 			*first = val;
 			++first;
 		}
+		return first;
 	}
 
 	template <class ForwardIter, class Size, class T>
