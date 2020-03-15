@@ -29,7 +29,8 @@ namespace TinySTL
 	void push_heap(RandomIter first, RandomIter last, Compare comp)
 	{
 		using Distance = typename iterator_traits<RandomIter>::difference_type;
-		_push_heap(first, last, Distance(last - first - 1), Distance(0), *(last - 1), comp);
+		_push_heap(first, Distance((last - first) - 1),
+						  Distance(0), *(last - 1), comp);
 	}
 
 	template <class RandomIter, class Distance, class T, class Compare>

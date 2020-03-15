@@ -298,7 +298,9 @@ namespace TinySTL
     constexpr bool _is_iterator_v = false;
 
     template <class T>
-    constexpr bool _is_iterator_v<T, void_t<typename iterator_traits<T>::iterator_category>> = true;
+    constexpr bool _is_iterator_v<T,
+        void_t<typename iterator_traits<T>::iterator_category>> = true;
+
 }
 
 #endif /* _TINYSTL_ITERATOR_H_ */
