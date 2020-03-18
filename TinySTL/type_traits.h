@@ -36,6 +36,27 @@ namespace TinySTL
 
     template <class T>
     using remove_reference_t = typename remove_reference<T>::type;
+
+    template <class T>
+    struct remove_extent
+    {
+        using type = T;
+    };
+
+    template <class T, size_t n>
+    struct remove_extent<T[n]>
+    {
+        using type = T;
+    };
+
+    template <class T>
+    struct remove_extent<T[]>
+    {
+        using type = T;
+    };
+
+    template <class T>
+    using remove_extent_t = typename remove_extent<T>::type;
 }
 
 #endif /* _TINYSTL_TYPE_TRAITS_H_ */

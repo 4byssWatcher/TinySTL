@@ -7,6 +7,7 @@
 #include <type_traits>//std::is_trivial
 #include "algorithm.h"
 #include "iterator.h"
+#include "type_traits.h"
 #include "utility.h"
 #include "xmemory.h"
 
@@ -26,21 +27,29 @@ namespace TinySTL
 		void operator ()(T* ptr) { if (ptr)delete[] ptr; }
 	};
 
-	/* pending modification for EBO */
-	template <class T, class D = default_deleter<T> >
+	/* never mind EBO... */
+	template <class T,
+			  class D = std::conditional_t<std::is_array_v<T>,
+										   default_deleter<remove_extent_t<T>[]>,
+										   default_deleter<remove_extent_t<T> > > >
 	class unique_ptr
 	{
 	public:
-		using element_type = T;
+		using element_type = remove_extent_t<T>;
 		using deleter_type = D;
-		using pointer      = T*;
+		using pointer      = element_type*;
+		using size_type    = size_t;
 	private:
 		pointer       data;
 		deleter_type  deleter;
 
 	public:
-		explicit unique_ptr(T* _data = nullptr) :data(_data) {}
-		unique_ptr(T* _data, D _del) :data(_data), deleter(_del) {}
+		template <class U>
+		explicit unique_ptr(U* _data = nullptr) :data(_data) {}
+
+		template <class U>
+		unique_ptr(U* _data, D _del) :data(_data), deleter(_del) {}
+
 		unique_ptr(unique_ptr&& _up)
 		{
 			data = _up.data;
@@ -72,7 +81,8 @@ namespace TinySTL
 		pointer operator ->() { return data; }
 		const pointer operator ->()const { return data; }
 
-
+		element_type& operator [](size_type n) { return *(data + n); }
+		const element_type& operator [](size_type n)const { return *(data + n); }
 
 		void reset(pointer _data = nullptr)
 		{
@@ -184,26 +194,80 @@ namespace TinySTL
 		if (_data)delete _data;
 	}
 
+	/*
+		just a stupid implementation
+		this works but there should be a better one...
+		not able to understand how it's implemented in STL for now
+		pending modification
+	*/
+
 	template <class T>
-	class ref_type
+	class shared_ptr;
+
+	class ref_type_base
 	{
 	public:
-		using element_type = T;
-		using deleter_type = std::function<void(T*)>;
-		using pointer = T*;
+		template <class T>
+		friend class shared_ptr;
+
+	protected:
+		size_t refcount;
+
+	protected:
+		ref_type_base() :refcount(0) {}
+
+		void inc_ref()
+			{ ++refcount; }
+
+		virtual void  dec_ref() = 0;
+		virtual void* get_data() = 0;
+
+		ref_type_base* copy_ref()
+		{
+			inc_ref();
+			return this;
+		}
+
+	};
+
+	template <class T, class D>
+	class ref_type_impl : ref_type_base
+	{
 	public:
-		size_t        refcount;
+		template <class T>
+		friend class shared_ptr;
+
+	protected:
+		using element_type = T;
+		using deleter_type = D;
+		using pointer	   = element_type*;
+	protected:
 		pointer       data;
 		deleter_type  deleter;
-	public:
-		explicit ref_type(T* _data = nullptr, deleter_type _del = _default_deleter<T>)
-			:refcount(0), data(_data), deleter(_del)
-		{
-			if (data)refcount = 1;
-		}
-		~ref_type()
+
+	protected:
+		void dec_ref()
 		{
 			--refcount;
+			if (0 == refcount)
+			{
+				deleter(data);
+				data = nullptr;
+			}
+		}
+
+		void* get_data()
+			{ return static_cast<void*>(data); }
+
+		ref_type_impl(pointer _data, deleter_type _del)
+			:data(_data), deleter(_del)
+		{
+			if (data)inc_ref();
+		}
+
+		~ref_type_impl()
+		{
+			dec_ref();
 			if (0 == refcount)deleter(data);
 			data = nullptr;
 		}
@@ -214,66 +278,87 @@ namespace TinySTL
 	class shared_ptr
 	{
 	public:
-		using element_type = T;
-		using deleter_type = std::function<void(T*)>;
-		using pointer      = T*;
+		using element_type = remove_extent_t<T>;
+		using pointer      = element_type*;
+		using size_type	   = size_t;
+
 	private:
-		ref_type<T>*  ref;
+		ref_type_base*  ref;
 
 	public:
-		void dec_ref()
+		shared_ptr() {}
+		shared_ptr(nullptr_t) {}
+
+		template <class U>
+		explicit shared_ptr(U* data)
 		{
-			if (ref->refcount && --ref->refcount==0)
+			// operator() of default_deleter redefined
+			if constexpr (std::is_array_v<T>)
 			{
-				ref->deleter(ref->data);
-				ref->data = nullptr;
+				ref = new ref_type_impl<U,
+					default_deleter<U[]> >(data, default_deleter<U[]>{});
+			}
+			else
+			{
+				ref = new ref_type_impl<U,
+					default_deleter<U> >(data, default_deleter<U>{});
 			}
 		}
 
-		void copy_ref(ref_type<T>* _r)
+		template <class U, class D>
+		shared_ptr(U* data, D del)
+			:ref(new ref_type_impl<element_type, D>(data, del)) {}
+
+		shared_ptr(const shared_ptr& sp)
+			:ref(sp.ref->copy_ref()) {}
+
+		shared_ptr& operator = (shared_ptr& sp)
 		{
-			ref = _r;
-			ref->refcount++;
-		}
-
-	public:
-		explicit shared_ptr(T* _data = nullptr) :ref(new ref_type<T>(_data)) {}
-
-		template <class D>
-		shared_ptr(T* _data, D _del) : ref(new ref_type<T>(_data, _del)) {}
-
-		shared_ptr(const shared_ptr& _sp)
-		{
-			copy_ref(_sp.ref);
-		}
-
-		shared_ptr& operator = (shared_ptr& _sp)
-		{
-			if (this != &_sp)
+			if (this != &sp)
 			{
-				dec_ref();
-				copy_ref(_sp.ref);
+				ref->dec_ref();
+				ref = copy_ref(sp.ref);
 			}
 		}
 
 		~shared_ptr()
 		{
-			dec_ref();
+			if(ref)
+				ref->dec_ref();
 		}
 
-		pointer get() { return ref->data; }
-		const pointer get()const { return ref->data; }
+		pointer get()
+			{ return static_cast<pointer>(ref->get_data()); }
+		const pointer get()const
+			{ return static_cast<pointer>(ref->get_data()); }
 
-		deleter_type get_deleter() { return ref->deleter; }
-		const deleter_type get_deleter()const { return ref->deleter; }
+		template <class Deleter>
+		Deleter* get_deleter()
+		{
+			if(ref)
+				return static_cast<Deleter*>(ref->deleter);
+		}
 
 		operator bool() { return ref->data != nullptr; }
 
-		element_type& operator *() { return *(ref->data); }
-		const element_type& operator *()const { return *(ref->data); }
+		element_type& operator *()
+			{ return *(static_cast<pointer>(ref->get_data())); }
+		const element_type& operator *()const
+			{ return *(static_cast<pointer>(ref->get_data())); }
 
-		pointer operator ->() { return ref->data; }
-		const pointer operator ->()const { return ref->data; }
+		pointer operator ->()
+			{ return static_cast<pointer>(ref->get_data()); }
+		const pointer operator ->()const
+			{ return static_cast<pointer>(ref->get_data()); }
+
+		element_type& operator [](size_type n)
+		{
+			return *(static_cast<pointer>(ref->get_data()) + n);
+		}
+		const element_type operator [](size_type n)const
+		{
+			return *(static_cast<pointer>(ref->get_data()) + n);
+		}
 	};
 
 	template <class T1, class T2>
